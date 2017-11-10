@@ -2,6 +2,7 @@ const strategy = require("passport-local").strategy,
   user = require("../api/user/userModel");
 
 module.exports = function(passport) {
+  
   // ==========================================
   // passport session setup ===================
   // ==========================================

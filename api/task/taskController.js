@@ -5,14 +5,14 @@ const mongoose = require("mongoose"),
 
 //promises not callbacks
 
-exports.GetAllTasks = function(req, res) {
+exports.getAllTasks = function(req, res) {
   task.find({}, function(err, task) {
     if (err) res.send(err);
     res.json(task);
   });
 };
 
-exports.CreateTask = function(req, res) {
+exports.createTask = function(req, res) {
   var newTask = new task(req.body);
   newTask.save(function(err, task) {
     if (err) res.send(err);
@@ -20,14 +20,14 @@ exports.CreateTask = function(req, res) {
   });
 };
 
-exports.GetTask = function(req, res) {
+exports.getTask = function(req, res) {
   task.findById(req.params.taskId, function(err, task) {
     if (err) res.send(err);
     res.json(task);
   });
 };
 
-exports.UpdateTask = function(req, res) {
+exports.updateTask = function(req, res) {
   task.findOneAndUpdate(
     { _id: req.params.taskId },
     req.body,
@@ -39,7 +39,7 @@ exports.UpdateTask = function(req, res) {
   );
 };
 
-exports.DeleteTask = function(req, res) {
+exports.deleteTask = function(req, res) {
   task.remove(
     {
       _id: req.params.taskId

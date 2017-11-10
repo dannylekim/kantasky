@@ -15,6 +15,10 @@ const taskSchema = new Schema({
     type: Date,
     default: undefined
   },
+  category: {
+    type: String,
+    default: "Misc."
+  },
   status: {
     type: [
       {
