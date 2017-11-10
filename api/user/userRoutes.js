@@ -1,15 +1,8 @@
 module.exports = function(app, passport) {
-    const userController = require('./userController')
+  const userController = require("./userController");
 
-    app.route('/login')
+  app
+    .route("/login")
     //.get template
-    .post(userController.login)
-
-
-
-
-
-
-
-
-}
+    .post(userController.login);
+};
