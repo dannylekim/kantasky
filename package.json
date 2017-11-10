@@ -14,7 +14,7 @@
   },
   "keywords": ["team", "project", "organization", "todolist"],
   "author": "Danny Le Kim",
-  "license": "ISC",
+  "license": "Apache 2.0",
   "bugs": {
     "url": "https://github.com/dannylekim/teamOrganizer/issues"
   },
