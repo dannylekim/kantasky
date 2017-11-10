@@ -1,8 +1,7 @@
 'use strict'
 
 module.exports = function (app) {
-    var taskController = require('./taskController')
-
+    const taskController = require('./taskController')
 
 //task related Routes
 
