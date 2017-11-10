@@ -1,7 +1,8 @@
 {
   "name": "teamorganizer",
   "version": "1.0.0",
-  "description": "An organization tool meant to be used for project management ",
+  "description":
+    "An organization tool meant to be used for project management ",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,12 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/dannylekim/teamOrganizer.git"
   },
-  "keywords": [
-    "team",
-    "project",
-    "organization",
-    "todolist"
-  ],
+  "keywords": ["team", "project", "organization", "todolist"],
   "author": "Danny Le Kim",
   "license": "ISC",
   "bugs": {

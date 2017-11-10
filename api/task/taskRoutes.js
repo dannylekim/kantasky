@@ -1,17 +1,18 @@
-'use strict'
+"use strict";
 
-module.exports = function (app) {
-    const taskController = require('./taskController')
+module.exports = function(app) {
+  const taskController = require("./taskController");
 
-//task related Routes
+  //task related Routes
 
-app.route('/tasks')
+  app
+    .route("/tasks")
     .get(taskController.GetAllTasks)
-    .post(taskController.CreateTask)
+    .post(taskController.CreateTask);
 
-app.route('/tasks/:taskId')
+  app
+    .route("/tasks/:taskId")
     .get(taskController.GetTask)
     .put(taskController.UpdateTask)
-    .delete(taskController.DeleteTask)
-
-}
+    .delete(taskController.DeleteTask);
+};
