@@ -1,6 +1,5 @@
 //============ Setting up the environment ==================
 
-//TODO: use Prettier
 const express = require("express"),
   app = express(),
   port = process.env.PORT || 4000,
@@ -16,11 +15,13 @@ const express = require("express"),
   session = require("express-session");
 
 //======== Database Configuration =======================
+
 const promise = mongoose.connect(config.database, {
   useMongoClient: true
 }); //database connection
 
 //============= Express Application Configuration ==========
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
@@ -34,6 +35,7 @@ app.use(function(req, res) {
 });
 
 //=============== Start the Server =====================
+
 routes(app);
 app.listen(port);
 console.log("Server started on port: " + port);

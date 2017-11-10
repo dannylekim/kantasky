@@ -7,12 +7,12 @@ module.exports = function(app) {
 
   app
     .route("/tasks")
-    .get(taskController.GetAllTasks)
-    .post(taskController.CreateTask);
+    .get(taskController.getAllTasks)
+    .post(taskController.createTask);
 
   app
     .route("/tasks/:taskId")
-    .get(taskController.GetTask)
-    .put(taskController.UpdateTask)
-    .delete(taskController.DeleteTask);
+    .get(taskController.getTask)
+    .put(taskController.updateTask)
+    .delete(taskController.deleteTask);
 };
