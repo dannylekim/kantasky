@@ -38,6 +38,7 @@ exports.updateTask = function(req, res) {
 };
 
 exports.deleteTask = function(req, res) {
+
   task.remove(
     {
       _id: req.params.taskId

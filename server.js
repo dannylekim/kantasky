@@ -1,5 +1,7 @@
 //============ Setting up the environment ==================
 
+
+//TODO: Set this in APP.JS 
 const express = require("express"),
   app = express(),
   port = process.env.PORT || 4000,
