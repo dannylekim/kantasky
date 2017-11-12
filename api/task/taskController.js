@@ -3,8 +3,6 @@
 const mongoose = require("mongoose"),
   task = mongoose.model("Task");
 
-//promises not callbacks
-
 exports.getAllTasks = function(req, res) {
   task.find({}, function(err, task) {
     if (err) res.send(err);
@@ -50,3 +48,6 @@ exports.deleteTask = function(req, res) {
     }
   );
 };
+
+
+//promises not callbacks
