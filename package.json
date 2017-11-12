@@ -1,8 +1,7 @@
 {
   "name": "teamorganizer",
   "version": "1.0.0",
-  "description":
-    "An organization tool meant to be used for project management ",
+  "description": "An organization tool meant to be used for project management ",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,7 +11,12 @@
     "type": "git",
     "url": "git+https://github.com/dannylekim/teamOrganizer.git"
   },
-  "keywords": ["team", "project", "organization", "todolist"],
+  "keywords": [
+    "team",
+    "project",
+    "organization",
+    "todolist"
+  ],
   "author": "Danny Le Kim",
   "license": "Apache 2.0",
   "bugs": {
@@ -20,16 +24,16 @@
   },
   "homepage": "https://github.com/dannylekim/teamOrganizer#readme",
   "devDependencies": {
+    "morgan": "^1.9.0",
     "nodemon": "^1.12.1"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
+    "bcrypt": "^1.0.3",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.2",
-    "express-session": "^1.15.6",
     "jsonwebtoken": "^8.1.0",
     "mongoose": "^4.13.1",
-    "morgan": "^1.9.0",
-    "passport": "^0.4.0"
+    "passport": "^0.4.0",
+    "passport-jwt": "^3.0.1"
   }
 }

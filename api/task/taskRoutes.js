@@ -1,18 +1,15 @@
 "use strict";
+const taskController = require("./taskController"),
+  router = require("express").Router();
 
-module.exports = function(app) {
-  const taskController = require("./taskController");
+router.route("/")
+  .get(taskController.getAllTasks)
+  .post(taskController.createTask);
 
-  //task related Routes
+router
+  .route("/:taskId")
+  .get(taskController.getTask)
+  .put(taskController.updateTask)
+  .delete(taskController.deleteTask);
 
-  app
-    .route("/tasks")
-    .get(taskController.getAllTasks)
-    .post(taskController.createTask);
-
-  app
-    .route("/tasks/:taskId")
-    .get(taskController.getTask)
-    .put(taskController.updateTask)
-    .delete(taskController.deleteTask);
-};
+module.exports = router;

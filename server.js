@@ -5,18 +5,44 @@ const express = require("express"),
   port = process.env.PORT || 4000,
   mongoose = require("mongoose"),
   Task = require("./api/task/taskModel"),
+  User = require("./api/user/userModel"),
   bodyParser = require("body-parser"),
   MongoClient = require("mongodb").MongoClient,
-  config = require("./config"),
-  routes = require("./api/task/taskRoutes"),
+  config = require("./config/config"),
+  router = require("./config/routes"),
   passport = require("passport"),
+  passportJWT = require("passport-jwt"),
+  extractJWT = passportJWT.ExtractJwt,
+  jwtStrategy = passportJWT.Strategy,
   morgan = require("morgan"),
   cookieParser = require("cookie-parser"),
-  session = require("express-session");
+  auth = require("./config/authentication")
+  bcrypt = require("bcrypt");
+
+
+//============ Strategy Configuration ==================
+var jwtOptions = {};
+jwtOptions.jwtFromRequest = extractJWT.fromAuthHeaderAsBearerToken();
+jwtOptions.secretOrKey = config.secret;
+
+var strategy = new jwtStrategy(jwtOptions, function(jwtPayload, next) {
+  console.log("Payload: ", jwtPayload);
+  auth.getUser(jwtPayload.id, (err, user) => {
+    if (user) {
+      console.log("Succesful");
+      next(null, user);
+    } else {
+      console.log("Unsuccesful");
+      next(null, false);
+    }
+  });
+});
+
+passport.use(strategy);
 
 //======== Database Configuration =======================
-
-const promise = mongoose.connect(config.database, {
+mongoose.Promise = global.Promise;
+mongoose.connect(config.database, {
   useMongoClient: true
 }); //database connection
 
@@ -26,16 +52,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
-app.use(session(config.secret));
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use("/", router);
 app.use(function(req, res) {
-  res.status(404).send({ url: req.originalUrl + "is not a valid request URL" });
-});
+  res
+    .status(404)
+    .send({ url: req.originalUrl + " is not a valid request URL" });
+}); //TODO: send a 404 template
 
 //=============== Start the Server =====================
 
-routes(app);
 app.listen(port);
 console.log("Server started on port: " + port);
+
+//TODO: Create a router js that describes the routes
