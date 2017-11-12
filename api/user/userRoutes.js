@@ -2,8 +2,7 @@
 
 const userController = require("./userController"),
   router = require("express").Router(),
-  passport = require("passport"),
-  auth = require('../../config/authentication')
+  passport = require("passport");
 
 router
   .route("/login")
