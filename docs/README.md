@@ -33,6 +33,16 @@ Additionally, there is a **mobile app** attached to this application written in 
 - secure JWT login complete with salt 
 - angular templating for server side html creation 
 
+# MongoDB Data Structure
+
+User -> has user data as well as groups he is part of, probs in a sort of array of groupName + id and a task list grouped in the same way
+groups -> has a stack of users and a stack of tasks associated to users or floating (a float user)
+    -> can also have just a group solely where the user is the only user inside and all tasks are associated then to this user or float 
+        -> have a flag denoting ['group', 'personal']
+        -> in this way you can stack multiple up multiple groupings for that user and just query database with the array 
+tasks -> a task
+
+
 # Additional notices
 
 - try to read up on [Node Best Practices](https://github.com/i0natan/nodebestpractices)
