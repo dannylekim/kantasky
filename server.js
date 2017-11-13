@@ -1,5 +1,4 @@
-//============ Setting up the environment ==================
-
+//============ Setting up the Express environment ==================
 
 //TODO: Set this in APP.JS 
 const express = require("express"),
@@ -17,8 +16,7 @@ const express = require("express"),
   extractJWT = passportJWT.ExtractJwt,
   jwtStrategy = passportJWT.Strategy,
   morgan = require("morgan"),
-  cookieParser = require("cookie-parser"),
-  auth = require("./config/authentication")
+  auth = require("./config/globalFunctions")
   bcrypt = require("bcrypt");
 
 
@@ -27,20 +25,19 @@ var jwtOptions = {};
 jwtOptions.jwtFromRequest = extractJWT.fromAuthHeaderAsBearerToken();
 jwtOptions.secretOrKey = config.secret;
 
-var strategy = new jwtStrategy(jwtOptions, function(jwtPayload, next) {
-  console.log("Payload: ", jwtPayload);
+var strategy = new jwtStrategy(jwtOptions, function(jwtPayload, callback) {
   auth.getUser(jwtPayload.id, (err, user) => {
     if (user) {
-      console.log("Succesful");
-      next(null, user);
+      callback(null, user);
     } else {
-      console.log("Unsuccesful");
-      next(null, false);
+      callback(null, false);
     }
   });
 });
 
 passport.use(strategy);
+
+//TODO: Look up serialize/deserialize user and verify if it's useful at all
 
 //======== Database Configuration =======================
 mongoose.Promise = global.Promise;
