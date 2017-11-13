@@ -6,16 +6,34 @@ const userController = require("./userController"),
 
 router
   .route("/login")
-  //.get template
   .post(userController.authenticate)
-  .get(passport.authenticate("jwt", { session: false }), function(req, res) {
-    res.status(200).json("Success! You can not see this without a token");
+  .get(function(req, res) {
+    res.status(200).json("TODO: SEND LOGIN PAGE");
   });
 
-router.route("/signup").post(userController.createUser);
+router
+  .route("/signup")
+  .get(function(req, res) {
+    res.status(200).json("TODO: SEND SIGNUP PAGE");
+  })
+  .post(userController.createUser);
 
-router.route("/users").get(userController.getAllUsers);
+router.route("/main").get(function(req, res) {
+  res.status(200).json("TODO: SEND MAIN PAGE");
+});
 
-router.route("/users/:userId").delete(userController.deleteUser)
+router
+  .route("/users")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    userController.getAllUsers
+  );
+
+router
+  .route("/users/:userId")
+  .delete(
+    passport.authenticate("jwt", { session: false }),
+    userController.deleteUser
+  );
 
 module.exports = router;

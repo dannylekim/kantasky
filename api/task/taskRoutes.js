@@ -1,8 +1,6 @@
 "use strict";
 const taskController = require("./taskController"),
   passport = require("passport"),
-  config = require("../../config/config"),
-  jwt = require("jsonwebtoken"),
   router = require("express").Router();
 
 router
@@ -17,3 +15,5 @@ router
   .delete(passport.authenticate("jwt", { session: false }),taskController.deleteTask);
 
 module.exports = router;
+
+
