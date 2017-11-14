@@ -50,7 +50,6 @@ mongoose.connect(config.database, {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
-app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/", router);

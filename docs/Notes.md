@@ -19,7 +19,7 @@ Android app written in Kotlin
 # Important 
 
 Reorganize and refactor to be using promises and arrow functions
-Logging functions to keep stack trace
+Logging functions to keep stack trace -- Winston
 
 
 ### Maybe 
