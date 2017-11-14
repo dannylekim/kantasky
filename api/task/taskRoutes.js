@@ -4,16 +4,33 @@ const taskController = require("./taskController"),
   router = require("express").Router();
 
 router
-  .route("/")
-  .get(passport.authenticate("jwt", { session: false }), taskController.getAllTasks)
-  .post(passport.authenticate("jwt", { session: false }), taskController.createTask);
+  .route("/:userId")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    taskController.getUsersTasks
+  )
+  .post(
+    passport.authenticate("jwt", { session: false }),
+    taskController.createTask
+  );
 
 router
   .route("/:taskId")
-  .get(passport.authenticate("jwt", { session: false }),taskController.getTask)
-  .put(passport.authenticate("jwt", { session: false }),taskController.updateTask)
-  .delete(passport.authenticate("jwt", { session: false }),taskController.deleteTask);
+  .get(passport.authenticate("jwt", { session: false }), taskController.getTask)
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    taskController.updateTask
+  )
+  .delete(
+    passport.authenticate("jwt", { session: false }),
+    taskController.deleteTask
+  );
+
+router
+  .route("/")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    taskController.getAllTasks
+  );
 
 module.exports = router;
-
-

@@ -1,6 +1,12 @@
 # Issues
 
+## Things to do next
 
+Adjust apis to reflect new model changes 
+    -> Tasks
+    -> Groups
+    -> Users
+Add an expiration to JWT 
 
 # Things that still need to be done
 
@@ -29,6 +35,8 @@ Logging functions to keep stack trace -- Winston
 Unit Tests -> maybe not to TDD in this project, but another personal project dedicated to TDD 
     -> though it would be useful to have when making sure the whole api stack isn't broken 
 argon2 hashing algorithm over bcrypt
+
+
 
 
 

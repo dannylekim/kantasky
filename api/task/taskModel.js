@@ -37,7 +37,7 @@ const taskSchema = new Schema({
     type: [],
     default: ['none']
   },
-  categories: {
+  category: {
     type: String,
     default: "Misc."
   }

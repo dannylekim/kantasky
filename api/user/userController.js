@@ -19,7 +19,9 @@ exports.authenticate = function(req, res) {
       } else {
         const payload = { id: user.id, role: user.role };
         const token = jwt.sign(payload, config.secret);
-        res.json({ message: "Login Successful", token: token });
+        user.password = undefined
+        user.role = undefined
+        res.json({ message: "Login Successful", token: token, user: user });
       }
     });
   }
