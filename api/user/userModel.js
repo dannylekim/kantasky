@@ -33,14 +33,15 @@ const userSchema = new Schema({
     type: String,
     required: "Please put a last name"
   },
-  //remake this
-  groups : [{
-    category: [{
-      type: String,
-      enum:["group", "personal"]
-    }],
-    groupID: []
-  }],
+  groups: [
+    {
+      category: {
+        type: String,
+        enum: ["group", "personal"]
+      },
+      groupId: String
+    }
+  ],
   notifications: []
 });
 
