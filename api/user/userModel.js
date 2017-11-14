@@ -32,7 +32,14 @@ const userSchema = new Schema({
   lastName: {
     type: String,
     required: "Please put a last name"
-  }
+  },
+  groups : [{
+    category: [{
+      type: String,
+      enum:["group", "personal"]
+    }],
+    groupID: []
+  }]
 });
 
 userSchema.methods.isPasswordValid = function(password, callback, id) {
