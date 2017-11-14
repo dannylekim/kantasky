@@ -10,11 +10,13 @@ Implement angular templating into the project
 Everything on the todo obviously
 Attaching users and tasks to each other following the data structure
 Group API 
+web-api notification -> set a notification on the user, web page checks if, if there, open a notification
 Email/SMS Notification
 Timer that starts how long you've been working on the task
 Inviting people to groups
 charts
 Android app written in Kotlin
+Username checks in the db
 
 # Important 
 

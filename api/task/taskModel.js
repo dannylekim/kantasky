@@ -32,6 +32,14 @@ const taskSchema = new Schema({
       }
     ],
     default: ["normal"]
+  },
+  user: {
+    type: [],
+    default: ['none']
+  },
+  categories: {
+    type: String,
+    default: "Misc."
   }
 });
 

@@ -22,7 +22,7 @@ Additionally, there is a **mobile app** attached to this application written in 
 # Features 
 
 - A normal personal toDo List per user 
-    - these have an importance, and a due date. If you have the mobile app, it will send a notification. Else, it can send an email to you when assigned or when coming up
+    - these have an importance, and a due date. If you have the mobile app, it will send a notification. Else, it can send an email to you when assigned or when coming up or just use our web-api
     - these also have a category 
     - you can start a task and a timer will begin on it
 - ability to create groups and become Team Leader of the group
