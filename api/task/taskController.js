@@ -28,13 +28,24 @@ exports.getUsersTasks = function(req, res) {
   });
 };
 
-
-//call another method to put the newly created Task into the group
 exports.createTask = function(req, res) {
   var newTask = new task(req.body);
   newTask.save(function(err, task) {
     if (err) res.send(err);
-    else res.json(task);
+    else {
+      group.findOneAndUpdate(
+        { _id: groupId },
+        { $push: { task: task, userId: userId } },
+        { new: true },
+        function(err, task) {
+          if (err) {
+            return err;
+          } else {
+            res.json(task);
+          }
+        }
+      );
+    }
   });
 };
 

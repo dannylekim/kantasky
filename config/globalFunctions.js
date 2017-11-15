@@ -33,7 +33,7 @@ const isAdmin = function(token, callback) {
   token = token.replace("Bearer ", "")
   const user = jwt.decode(token)
   if(user.role[0] !== "admin"){
-    callback("Unauthorized Access. User does not have administrator privileges")
+    callback(new Error("Unauthorized Access. User does not have administrator privileges"))
   }
   else {
     callback(null, true)
