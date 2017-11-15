@@ -5,7 +5,6 @@ const userModel = require("mongoose").model("User"),
 
 const verifyPassword = function(userData, callback) {
   userModel.findOne({ username: userData.username }, (err, user) => {
-    console.log(userData.username);
     if (err) {
       callback(err);
     } else if (!user) {
@@ -39,6 +38,13 @@ const isAdmin = function(token, callback) {
     callback(null, true)
   }
 };
+
+//================ Decode =========================
+
+const getIdFromToken = function(token){
+  return jwt.decode(token).id
+}
+
 
 exports.isAdmin = isAdmin;
 exports.getUser = getUser;

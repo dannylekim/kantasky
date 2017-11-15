@@ -34,6 +34,17 @@ router
   .delete(
     passport.authenticate("jwt", { session: false }),
     userController.deleteUser
+  )
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    userController.updateUser
+  );
+
+router
+  .route("/changePassword")
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    userController.changePassword
   );
 
 module.exports = router;
