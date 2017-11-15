@@ -22,6 +22,8 @@ charts
 Android app written in Kotlin
 Username checks in the db
 
+Read more about mongo schemas in hopes to optimizing
+
 # Important 
 
 Reorganize and refactor to be using promises and arrow functions

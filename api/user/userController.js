@@ -34,6 +34,8 @@ exports.createUser = function(req, res) {
       if (err) {
         res.send(err);
       } else {
+        user.password = undefined
+        user.role = undefined
         res.json({ user });
       }
     });

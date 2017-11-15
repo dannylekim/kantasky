@@ -42,7 +42,13 @@ const userSchema = new Schema({
       groupId: String
     }
   ],
-  notifications: []
+  notifications: [],
+  createdDate: [
+    {
+      type: Date,
+      default: Date.now
+    }
+  ]
 });
 
 userSchema.methods.isPasswordValid = function(password, callback, id) {
