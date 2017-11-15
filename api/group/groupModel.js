@@ -3,10 +3,9 @@ const mongoose = require("mongoose"),
   Schema = mongoose.Schema;
 
 const groupSchema = new Schema({
-    users: [],
-    tasks: [{
-        task: [],
+    users: [{
         userId: String,
+        taskId: String
     }],
     name: {
         type: String,

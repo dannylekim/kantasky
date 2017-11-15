@@ -49,9 +49,11 @@ userSchema.methods.isPasswordValid = function(password, callback, id) {
   const storedHash = this.password;
   bcrypt.compare(password, storedHash, function(err, res) {
     if (err) {
+      console.log(err);
       callback(err);
+    } else {
+      callback(null, res, id);
     }
-    callback(null, res, id);
   });
 };
 

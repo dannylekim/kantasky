@@ -19,15 +19,13 @@ exports.authenticate = function(req, res) {
       } else {
         const payload = { id: user.id, role: user.role };
         const token = jwt.sign(payload, config.secret);
-        user.password = undefined
-        user.role = undefined
-        res.json({ message: "Login Successful", token: token, user: user });
+        res.json({ message: "Login Successful", token: token});
       }
     });
   }
 };
 
-//TODO: Verify no username is already in the database
+//TODO: Verify no username is already in the database and parse password to be safe
 exports.createUser = function(req, res) {
   bcrypt.hash(req.body.password, 10, function(err, hash) {
     req.body.password = hash;
@@ -75,3 +73,13 @@ exports.deleteUser = function(req, res) {
     }
   });
 };
+
+
+//TODO:
+exports.updateUser = function(){
+
+}
+
+exports.changePassword = function(){
+
+}

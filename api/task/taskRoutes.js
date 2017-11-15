@@ -7,11 +7,11 @@ router
   .route("/:userId")
   .get(
     passport.authenticate("jwt", { session: false }),
-    taskController.getUsersTasks
+    taskController.getUsersTask
   )
   .post(
     passport.authenticate("jwt", { session: false }),
-    taskController.createTask
+    taskController.createTaskInGroup
   );
 
 router

@@ -3,43 +3,56 @@
 const mongoose = require("mongoose"),
   task = mongoose.model("Task"),
   group = mongoose.model("Group"),
+  user = mongoose.model("User"),
   auth = require("../../config/globalFunctions");
 
-//There's probably a way to query the database to get what you want rather than a O(n^3) solution
-
-
-//redo this
-exports.getUsersTasks = function(req, res) {
-  var groupIds = [];
-  for (groups of req.body) {
-    groupIds.push(groups.groupId);
-  }
-  group.find({ id: { $in: groupIds } }, function(err, groups) {
-    if (err) {
-      res.send(err);
-    } else {
-      var userTasks = [];
-      for (group of groups) {
-        for (tasksArray of group.tasks) {
-          for (tasks of tasksArray) {
-            userTasks.push(tasks.task);
-          }
-        }
+//very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
+//Either there's a solution in terms of the implementation of the api or the database model
+//TODO: Test 
+exports.getUsersTask = function(req, res) {
+  user.find({ _id: req.params.userId }, function(err, user) {
+    if (err || user === null || user === undefined) res.send(err);
+    else if(!user.groups){
+      res.json({message: "User has no tasks"})
+    }
+    else {
+      var groupIds = [];
+      
+      for (groups of user.groups) {
+        groupIds.push(groups.groupId);
       }
-      res.json(userTasks);
+      group.find({ _id: { $in: groupIds } }, function(err, groups) {
+        if (err) {
+          res.send(err);
+        } else {
+          var userTasks = [];
+          for (group in groups) {
+            for (groupUser in groups.user) {
+              if (groupUser.id === user.id) {
+                userTasks.push(groupUser.taskId);
+              }
+            }
+          }
+          task.find({ _id: { $in: userTasks } }, function(err, tasks) {
+            if (err) res.send(err);
+            else {
+              res.json(tasks);
+            }
+          });
+        }
+      });
     }
   });
 };
 
-
-exports.createTask = function(req, res) {
+exports.createTaskInGroup = function(req, res) {
   var newTask = new task(req.body);
   newTask.save(function(err, task) {
     if (err) res.send(err);
     else {
       group.findOneAndUpdate(
         { _id: groupId },
-        { $push: { 'task': task._id, 'userId': userId } },
+        { $push: { 'taskId': task._id, 'userId': req.params.taskId } },
         { new: true },
         function(err, task) {
           if (err) {
@@ -53,15 +66,6 @@ exports.createTask = function(req, res) {
   });
 };
 
-
-exports.getTask = function(req, res) {
-  task.findById(req.params.taskId, function(err, task) {
-    if (err) res.send(err);
-    else res.json(task);
-  });
-};
-
-
 exports.updateTask = function(req, res) {
   task.findOneAndUpdate(
     { _id: req.params.taskId },
@@ -74,7 +78,7 @@ exports.updateTask = function(req, res) {
   );
 };
 
-//delete association to the group 
+//TODO: delete association to the group
 exports.deleteTask = function(req, res) {
   task.remove(
     {
@@ -86,6 +90,12 @@ exports.deleteTask = function(req, res) {
     }
   );
 };
+
+
+//TODO:Association of task to user in group 
+exports.assignTaskToGroupUser = function(){
+  
+}
 
 //=================== Admin Functions =======================
 
@@ -99,6 +109,14 @@ exports.getAllTasks = function(req, res) {
         else res.json(task);
       });
     }
+  });
+};
+
+// ===== Obsolete ====================
+exports.getTask = function(req, res) {
+  task.findById(req.params.taskId, function(err, task) {
+    if (err) res.send(err);
+    else res.json(task);
   });
 };
 
