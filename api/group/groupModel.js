@@ -5,7 +5,7 @@ const mongoose = require("mongoose"),
 const groupSchema = new Schema({
     users: [],
     tasks: [{
-        task: {},
+        task: [],
         userId: String,
     }],
     name: {

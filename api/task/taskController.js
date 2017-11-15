@@ -6,6 +6,9 @@ const mongoose = require("mongoose"),
   auth = require("../../config/globalFunctions");
 
 //There's probably a way to query the database to get what you want rather than a O(n^3) solution
+
+
+//redo this
 exports.getUsersTasks = function(req, res) {
   var groupIds = [];
   for (groups of req.body) {
@@ -28,6 +31,7 @@ exports.getUsersTasks = function(req, res) {
   });
 };
 
+
 exports.createTask = function(req, res) {
   var newTask = new task(req.body);
   newTask.save(function(err, task) {
@@ -35,7 +39,7 @@ exports.createTask = function(req, res) {
     else {
       group.findOneAndUpdate(
         { _id: groupId },
-        { $push: { task: task, userId: userId } },
+        { $push: { 'task': task._id, 'userId': userId } },
         { new: true },
         function(err, task) {
           if (err) {
@@ -49,7 +53,7 @@ exports.createTask = function(req, res) {
   });
 };
 
-//protect api by having to check if the user actually has that task
+
 exports.getTask = function(req, res) {
   task.findById(req.params.taskId, function(err, task) {
     if (err) res.send(err);
@@ -57,7 +61,7 @@ exports.getTask = function(req, res) {
   });
 };
 
-//protect api by having to check if the user actually has that task
+
 exports.updateTask = function(req, res) {
   task.findOneAndUpdate(
     { _id: req.params.taskId },
@@ -70,7 +74,7 @@ exports.updateTask = function(req, res) {
   );
 };
 
-//protect api by having to check if the user actually has that task
+//delete association to the group 
 exports.deleteTask = function(req, res) {
   task.remove(
     {
