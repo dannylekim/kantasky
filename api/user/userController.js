@@ -25,20 +25,35 @@ exports.authenticate = function(req, res) {
   }
 };
 
-//TODO: Verify no username is already in the database and parse password to be safe
 exports.createUser = function(req, res) {
-  bcrypt.hash(req.body.password, 10, function(err, hash) {
-    req.body.password = hash;
-    const newUser = new user(req.body);
-    newUser.save(function(err, user) {
-      if (err) {
-        res.send(err);
-      } else {
-        user.password = undefined;
-        user.role = undefined;
-        res.json({ user });
-      }
-    });
+  if (!auth.isPasswordValid(req.body.password)) {
+    res.send("Password is not valid");
+    return;
+  }
+  user.find({ username: req.body.username }, function(err, user) {
+    if (err) res.send(err);
+    else if (user) res.json({ message: "This user already exists!" });
+    else {
+      user.find({ email: req.body.email }, function(err, user) {
+        if (err) res.send(err);
+        else if (user) res.json({ message: "This email is already in use!" });
+        else {
+          bcrypt.hash(req.body.password, 10, function(err, hash) {
+            req.body.password = hash;
+            const newUser = new user(req.body);
+            newUser.save(function(err, user) {
+              if (err) {
+                res.send(err);
+              } else {
+                user.password = undefined;
+                user.role = undefined;
+                res.json({ user });
+              }
+            });
+          });
+        }
+      });
+    }
   });
 };
 
@@ -76,7 +91,6 @@ exports.deleteUser = function(req, res) {
   });
 };
 
-
 exports.updateUser = function(req, res) {
   var updateUser = {};
   if (req.body.firstName) {
@@ -101,15 +115,14 @@ exports.updateUser = function(req, res) {
   });
 };
 
-//TODO: password checks
 exports.changePassword = function(req, res) {
-  if(req.body.password){
-    user.find({_id: req.params.id}, function(err, foundUser){
-      foundUser.set({password: req.body.password})
-      foundUser.save(function(err, updatedUser){
-        if(err) res.send(err)
-        else res.json(updatedUser)
-      })
-    })
+  if (req.body.password && auth.isPasswordValid(req.body.password)) {
+    user.find({ _id: req.params.id }, function(err, foundUser) {
+      foundUser.set({ password: req.body.password });
+      foundUser.save(function(err, updatedUser) {
+        if (err) res.send(err);
+        else res.json(updatedUser);
+      });
+    });
   }
 };

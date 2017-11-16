@@ -8,14 +8,13 @@ const mongoose = require("mongoose"),
 
 //very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
 //Either there's a solution in terms of the implementation of the api or the database model
-//FIXME: Test 
+//FIXME: Test
 exports.getUsersTask = function(req, res) {
   user.find({ _id: req.params.userId }, function(err, user) {
     if (err || user === null || user === undefined) res.send(err);
-    else if(!user.groups){
-      res.json({message: "User has no tasks"})
-    }
-    else {
+    else if (!user.groups) {
+      res.json({ message: "User has no tasks" });
+    } else {
       var groupIds = [];
       for (groups of user.groups) {
         groupIds.push(groups.groupId);
@@ -44,8 +43,6 @@ exports.getUsersTask = function(req, res) {
   });
 };
 
-
-
 exports.createTaskInGroup = function(req, res) {
   var newTask = new task(req.body);
   newTask.save(function(err, task) {
@@ -53,7 +50,7 @@ exports.createTaskInGroup = function(req, res) {
     else {
       group.findOneAndUpdate(
         { _id: groupId },
-        { $push: { 'taskId': task._id, 'userId': req.params.taskId } },
+        { $push: { taskId: task._id, userId: req.params.taskId } },
         { new: true },
         function(err, task) {
           if (err) {
@@ -92,11 +89,8 @@ exports.deleteTask = function(req, res) {
   );
 };
 
-
-//TODO:Association of task to user in group 
-exports.assignTaskToGroupUser = function(){
-  
-}
+//TODO:Association of task to user in group
+exports.assignTaskToGroupUser = function() {};
 
 //=================== Admin Functions =======================
 
