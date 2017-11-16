@@ -18,8 +18,8 @@ exports.authenticate = function(req, res) {
         res.status(400).json({ message: err });
       } else {
         const payload = { id: user.id, role: user.role };
-        const token = jwt.sign(payload, config.secret);
-        res.json({ message: "Login Successful", token: token});
+        const token = jwt.sign(payload, config.secret, { expiresIn: "10h" });
+        res.json({ message: "Login Successful", token: token });
       }
     });
   }
@@ -34,8 +34,8 @@ exports.createUser = function(req, res) {
       if (err) {
         res.send(err);
       } else {
-        user.password = undefined
-        user.role = undefined
+        user.password = undefined;
+        user.role = undefined;
         res.json({ user });
       }
     });
@@ -77,11 +77,39 @@ exports.deleteUser = function(req, res) {
 };
 
 
-//TODO:
-exports.updateUser = function(){
+exports.updateUser = function(req, res) {
+  var updateUser = {};
+  if (req.body.firstName) {
+    updatedUser.firstName = req.body.firstName;
+  }
+  if (req.body.lastName) {
+    updatedUser.lastName = req.body.lastName;
+  }
+  if (req.body.email) {
+    updatedUser.email = req.body.email;
+  }
 
-}
+  user.find({ _id: req.params.userId }, function(err, foundUser) {
+    if (err) res.send(err);
+    else {
+      user.set(updatedUser);
+      user.save(function(err, updatedUser) {
+        if (err) res.send(err);
+        else res.json(updatedUser);
+      });
+    }
+  });
+};
 
-exports.changePassword = function(){
-
-}
+//TODO: password checks
+exports.changePassword = function(req, res) {
+  if(req.body.password){
+    user.find({_id: req.params.id}, function(err, foundUser){
+      foundUser.set({password: req.body.password})
+      foundUser.save(function(err, updatedUser){
+        if(err) res.send(err)
+        else res.json(updatedUser)
+      })
+    })
+  }
+};
