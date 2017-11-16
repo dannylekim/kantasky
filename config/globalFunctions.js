@@ -39,6 +39,24 @@ const isAdmin = function(token, callback) {
   }
 };
 
+const isPasswordValid = function(password) { 
+  let isPasswordValid = true;
+  //parse password
+  if(password > 160)
+  isPasswordValid = false;
+  if(!/\d/.test(password))
+  isPasswordValid = false;
+  if(!/[a-z]/.test(password))
+  isPasswordValid = false;
+  if(!/[A-Z]/.test(password))
+  isPasswordValid = false;
+  if(/[^0-9a-zA-Z]/.test(password))
+  isPasswordValid = false;
+
+  return isPasswordValid
+}
+
+
 //================ Decode =========================
 
 const getIdFromToken = function(token){
@@ -49,3 +67,4 @@ const getIdFromToken = function(token){
 exports.isAdmin = isAdmin;
 exports.getUser = getUser;
 exports.verifyPassword = verifyPassword;
+exports.isPasswordValid = isPasswordValid;
