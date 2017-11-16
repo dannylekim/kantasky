@@ -47,4 +47,11 @@ router
     userController.changePassword
   );
 
+router
+  .route("/updateAccount")
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    userController.updateUser
+  );
+
 module.exports = router;

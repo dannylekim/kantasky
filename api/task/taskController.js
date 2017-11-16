@@ -8,7 +8,7 @@ const mongoose = require("mongoose"),
 
 //very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
 //Either there's a solution in terms of the implementation of the api or the database model
-//TODO: Test 
+//FIXME: Test 
 exports.getUsersTask = function(req, res) {
   user.find({ _id: req.params.userId }, function(err, user) {
     if (err || user === null || user === undefined) res.send(err);
@@ -17,7 +17,6 @@ exports.getUsersTask = function(req, res) {
     }
     else {
       var groupIds = [];
-      
       for (groups of user.groups) {
         groupIds.push(groups.groupId);
       }
@@ -26,8 +25,8 @@ exports.getUsersTask = function(req, res) {
           res.send(err);
         } else {
           var userTasks = [];
-          for (group in groups) {
-            for (groupUser in groups.user) {
+          for (group of groups) {
+            for (groupUser of group.user) {
               if (groupUser.id === user.id) {
                 userTasks.push(groupUser.taskId);
               }
@@ -44,6 +43,8 @@ exports.getUsersTask = function(req, res) {
     }
   });
 };
+
+
 
 exports.createTaskInGroup = function(req, res) {
   var newTask = new task(req.body);

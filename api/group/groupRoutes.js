@@ -8,6 +8,10 @@ router
   .post(
     passport.authenticate("jwt", { session: false }),
     groupController.createGroup
+  )
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    groupController.getAllGroups
   );
 
 router
