@@ -50,7 +50,7 @@ exports.createTaskInGroup = function(req, res) {
     else {
       group.findOneAndUpdate(
         { _id: groupId },
-        { $push: { taskId: task._id, userId: req.params.taskId } },
+        { $push: { taskId: task._id, userId: req.params.userId } },
         { new: true },
         function(err, task) {
           if (err) {
@@ -76,7 +76,6 @@ exports.updateTask = function(req, res) {
   );
 };
 
-//TODO: delete association to the group
 exports.deleteTask = function(req, res) {
   task.remove(
     {
@@ -84,13 +83,28 @@ exports.deleteTask = function(req, res) {
     },
     function(err, task) {
       if (err) res.send(err);
-      else res.json({ message: "Task successfully removed" });
+      else {
+        group.find({ _id: req.params.groupId }, function(err, group) {
+          for (user in group.users) {
+            for (let index = 0; index < group.users[index].length; index++) {
+              if (task._id === user[index]) {
+                user.splice(index, 1);
+                group.save(function(err, group) {
+                  if (err) {
+                    res.send(err);
+                    return;
+                  } else {
+                    res.json({ message: "Task successfully removed" });
+                  }
+                });
+              }
+            }
+          }
+        });
+      }
     }
   );
 };
-
-//TODO:Association of task to user in group
-exports.assignTaskToGroupUser = function() {};
 
 //=================== Admin Functions =======================
 
