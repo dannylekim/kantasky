@@ -37,8 +37,10 @@ exports.deleteGroup = function(req, res) {
     }
     else{
     var users = []
+    var tasks = []
     for (user of foundGroup.users){
       users.push(user.userId)
+      tasks.push(user.taskId)
     }
     user.find({_id: {$in: users}}, function(err, foundUsers){
       for(groupUser in foundUsers){
@@ -57,15 +59,24 @@ exports.deleteGroup = function(req, res) {
           }
         }
       }
+    })
+    task.remove({_id: {$in: tasks}}, function(err, tasks){
+      if(err){
+        res.send(err)
+        return;
+      } 
+    })
       group.remove({_id: req.params.groupId}, function(err, removedGroup){
         if(err) res.send(err)
         else{
           res.json({message:"Group has successfully been removed"})
         }
       })
-    })}
+    }
   })
-};
+}
+
+
 
 exports.updateGroup = function(req, res) {
   group.findByIdAndUpdate(
