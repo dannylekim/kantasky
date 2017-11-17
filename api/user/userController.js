@@ -7,13 +7,13 @@ const mongoose = require("mongoose"),
   config = require("../../config/config"),
   jwt = require("jsonwebtoken");
 
-exports.authenticate = function(req, res) {
+exports.authenticate = function fieldChecks(req, res) {
   if (!req.body.username) {
     res.json({ message: "Please input a username" });
   } else if (!req.body.password) {
     res.json({ message: "Please input a password" });
   } else {
-    auth.verifyPassword(req.body, function(err, result, user) {
+    auth.verifyPassword(req.body, function sendResponse(err, result, user) {
       if (err) {
         res.status(400).json({ message: err });
       } else {
@@ -25,12 +25,15 @@ exports.authenticate = function(req, res) {
   }
 };
 
-exports.createUser = function(req, res) {
+exports.createUser = function isThePasswordValid(req, res) {
   if (!auth.isPasswordValid(req.body.password)) {
     res.send("Password is not valid");
     return;
   }
-  user.find({ username: req.body.username }, function(err, user) {
+  user.find({ username: req.body.username }, function userChecksAndHash(
+    err,
+    user
+  ) {
     if (err) res.send(err);
     else if (user) res.json({ message: "This user already exists!" });
     else {
@@ -38,10 +41,10 @@ exports.createUser = function(req, res) {
         if (err) res.send(err);
         else if (user) res.json({ message: "This email is already in use!" });
         else {
-          bcrypt.hash(req.body.password, 10, function(err, hash) {
+          bcrypt.hash(req.body.password, 10, function saveNewUser(err, hash) {
             req.body.password = hash;
             const newUser = new user(req.body);
-            newUser.save(function(err, user) {
+            newUser.save(function sendResponse(err, user) {
               if (err) {
                 res.send(err);
               } else {
@@ -57,12 +60,12 @@ exports.createUser = function(req, res) {
   });
 };
 
-exports.getAllUsers = function(req, res) {
-  auth.isAdmin(req.get("authorization"), function(err, isAdmin) {
+exports.getAllUsers = function isThisAdmin(req, res) {
+  auth.isAdmin(req.get("authorization"), function findAllUsers(err, isAdmin) {
     if (err) {
       res.status(401).send(err);
     } else {
-      user.find({}, function(err, user) {
+      user.find({}, function sendResponse(err, user) {
         if (err) {
           res.send(err);
         } else {
@@ -73,8 +76,8 @@ exports.getAllUsers = function(req, res) {
   });
 };
 
-exports.deleteUser = function(req, res) {
-  auth.isAdmin(req.get("authorization"), function(err, isAdmin) {
+exports.deleteUser = function checkAdmin(req, res) {
+  auth.isAdmin(req.get("authorization"), function removeUser(err, isAdmin) {
     if (err) {
       res.status(401).send(err);
     } else {
@@ -82,7 +85,7 @@ exports.deleteUser = function(req, res) {
         {
           _id: req.params.userId
         },
-        function(err, task) {
+        function sendResponse(err, task) {
           if (err) res.send(err);
           res.json({ message: "User successfully removed" });
         }
@@ -91,7 +94,7 @@ exports.deleteUser = function(req, res) {
   });
 };
 
-exports.updateUser = function(req, res) {
+exports.updateUser = function replaceFields(req, res) {
   var updateUser = {};
   if (req.body.firstName) {
     updatedUser.firstName = req.body.firstName;
@@ -103,11 +106,11 @@ exports.updateUser = function(req, res) {
     updatedUser.email = req.body.email;
   }
 
-  user.find({ _id: req.params.userId }, function(err, foundUser) {
+  user.find({ _id: req.params.userId }, function updateTheUser(err, foundUser) {
     if (err) res.send(err);
     else {
       user.set(updatedUser);
-      user.save(function(err, updatedUser) {
+      user.save(function sendResponse(err, updatedUser) {
         if (err) res.send(err);
         else res.json(updatedUser);
       });
@@ -115,11 +118,14 @@ exports.updateUser = function(req, res) {
   });
 };
 
-exports.changePassword = function(req, res) {
+exports.changePassword = function checkValidityOfPassword(req, res) {
   if (req.body.password && auth.isPasswordValid(req.body.password)) {
-    user.find({ _id: req.params.id }, function(err, foundUser) {
+    user.find({ _id: req.params.id }, function setTheParameters(
+      err,
+      foundUser
+    ) {
       foundUser.set({ password: req.body.password });
-      foundUser.save(function(err, updatedUser) {
+      foundUser.save(function sendResponse(err, updatedUser) {
         if (err) res.send(err);
         else res.json(updatedUser);
       });

@@ -9,8 +9,8 @@ const mongoose = require("mongoose"),
 //very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
 //Either there's a solution in terms of the implementation of the api or the database model
 //FIXME: Test
-exports.getUsersTask = function(req, res) {
-  user.find({ _id: req.params.userId }, function(err, user) {
+exports.getUsersTask = function findUser(req, res) {
+  user.find({ _id: req.params.userId }, function pullAllGroups(err, user) {
     if (err || user === null || user === undefined) res.send(err);
     else if (!user.groups) {
       res.json({ message: "User has no tasks" });
@@ -19,7 +19,10 @@ exports.getUsersTask = function(req, res) {
       for (groups of user.groups) {
         groupIds.push(groups.groupId);
       }
-      group.find({ _id: { $in: groupIds } }, function(err, groups) {
+      group.find({ _id: { $in: groupIds } }, function pullAllTasksFromGroups(
+        err,
+        groups
+      ) {
         if (err) {
           res.send(err);
         } else {
@@ -31,7 +34,10 @@ exports.getUsersTask = function(req, res) {
               }
             }
           }
-          task.find({ _id: { $in: userTasks } }, function(err, tasks) {
+          task.find({ _id: { $in: userTasks } }, function sendResponse(
+            err,
+            tasks
+          ) {
             if (err) res.send(err);
             else {
               res.json(tasks);
@@ -43,16 +49,16 @@ exports.getUsersTask = function(req, res) {
   });
 };
 
-exports.createTaskInGroup = function(req, res) {
+exports.createTaskInGroup = function setAndSaveNewTask(req, res) {
   var newTask = new task(req.body);
-  newTask.save(function(err, task) {
+  newTask.save(function updateThatGroup(err, task) {
     if (err) res.send(err);
     else {
       group.findOneAndUpdate(
         { _id: groupId },
         { $push: { taskId: task._id, userId: req.params.userId } },
         { new: true },
-        function(err, task) {
+        function sendResponse(err, task) {
           if (err) {
             return err;
           } else {
@@ -64,43 +70,46 @@ exports.createTaskInGroup = function(req, res) {
   });
 };
 
-exports.updateTask = function(req, res) {
+exports.updateTask = function findSpecificTask(req, res) {
   task.findOneAndUpdate(
     { _id: req.params.taskId },
     req.body,
     { new: true },
-    function(err, task) {
+    function sendResponse(err, task) {
       if (err) res.send(err);
       else res.json(task);
     }
   );
 };
 
-exports.deleteTask = function(req, res) {
+exports.deleteTask = function removeTheTask(req, res) {
   task.remove(
     {
       _id: req.params.taskId
     },
-    function(err, task) {
+    function findTaskInGroupAndRemove(err, task) {
       if (err) res.send(err);
       else {
-        group.find({ _id: req.params.groupId }, function(err, group) {
-          for (user in group.users) {
-            for (let index = 0; index < group.users[index].length; index++) {
-              if (task._id === user[index]) {
-                user.splice(index, 1);
-                group.save(function(err, group) {
-                  if (err) {
-                    res.send(err);
-                    return;
-                  } else {
-                    res.json({ message: "Task successfully removed" });
-                  }
-                });
+        group.find(
+          { _id: req.params.groupId },
+          function findTheUserAndDeleteTask(err, group) {
+            for (user in group.users) {
+              for (let index = 0; index < group.users[index].length; index++) {
+                if (task._id === user[index]) {
+                  user.splice(index, 1);
+                  group.save(function sendResponse(err, group) {
+                    if (err) {
+                      res.send(err);
+                      return;
+                    } else {
+                      res.json({ message: "Task successfully removed" });
+                    }
+                  });
+                }
               }
             }
           }
-        });
+        );
       }
     }
   );
@@ -108,12 +117,12 @@ exports.deleteTask = function(req, res) {
 
 //=================== Admin Functions =======================
 
-exports.getAllTasks = function(req, res) {
-  auth.isAdmin(req.get("authorization"), function(err, isAdmin) {
+exports.getAllTasks = function checkIfAdmin(req, res) {
+  auth.isAdmin(req.get("authorization"), function findTasks(err, isAdmin) {
     if (err) {
       res.status(401).send(err);
     } else {
-      task.find({}, function(err, task) {
+      task.find({}, function sendResponse(err, task) {
         if (err) res.send(err);
         else res.json(task);
       });
@@ -122,8 +131,8 @@ exports.getAllTasks = function(req, res) {
 };
 
 // ===== Obsolete ====================
-exports.getTask = function(req, res) {
-  task.findById(req.params.taskId, function(err, task) {
+exports.getTask = function LookForTask(req, res) {
+  task.findById(req.params.taskId, function sendResponse(err, task) {
     if (err) res.send(err);
     else res.json(task);
   });
