@@ -54,7 +54,7 @@ app.use(morgan("dev"));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/", router);
-app.use(function(req, res) {
+app.use(function sendResponse(req, res) {
   res
     .status(404)
     .send({ url: req.originalUrl + " is not a valid request URL" });

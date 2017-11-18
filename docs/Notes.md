@@ -2,13 +2,12 @@
 
 ## Things to do next
 
-Name all Functions
 Test all the api routes using API tests
-Proper Error Handling
+Proper Error Handling -- https://stackoverflow.com/questions/7310521/node-js-best-practice-exception-handling
 Proper Logging -- Winston 
 Refactoring using awaits/promises 
 Require on Folders not Files
-API Documentation -- Swagger
+API Documentation -- Swagger - https://www.youtube.com/watch?v=xggucT_xl5U
 Separate app and server files
 set NODE_ENV to production when out to prod
 Timer that tracks how long you're working on the task 

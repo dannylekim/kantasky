@@ -3,7 +3,7 @@ const userModel = require("mongoose").model("User"),
 
 //================= Verification ===================
 
-const verifyPassword = function(userData, callback) {
+const verifyPassword = function findUser(userData, callback) {
   userModel.findOne({ username: userData.username }, (err, user) => {
     if (err) {
       callback(err);
@@ -16,7 +16,7 @@ const verifyPassword = function(userData, callback) {
 };
 
 //================= Used for local passport strategy =============
-const getUser = function(userId, callback) {
+const getUser = function findUserById(userId, callback) {
   userModel.findById(userId, (err, user) => {
     if (err) {
       callback(err);
@@ -39,7 +39,7 @@ const isAdmin = function(token, callback) {
   }
 };
 
-const isPasswordValid = function(password) { 
+const isPasswordValid = function checkValidity(password) { 
   let isPasswordValid = true;
   //parse password
   if(password > 160)
@@ -59,7 +59,7 @@ const isPasswordValid = function(password) {
 
 //================ Decode =========================
 
-const getIdFromToken = function(token){
+const getIdFromToken = function decodeToken(token){
   return jwt.decode(token).id
 }
 
