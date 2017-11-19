@@ -1,9 +1,13 @@
+// ================= Initializations ===============
+
 "use strict";
 
 const userController = require("./userController"),
   router = require("express").Router(),
   passport = require("passport");
 
+
+// ================= Routes ===============  
 router
   .route("/login")
   .post(userController.authenticate)

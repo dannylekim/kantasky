@@ -1,7 +1,11 @@
+// ================= Initializations ===============
+
 "use strict";
 const taskController = require("./taskController"),
   passport = require("passport"),
   router = require("express").Router();
+
+// ================= Schemas ===============  
 
 router
   .route("/:userId")

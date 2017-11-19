@@ -1,6 +1,11 @@
+// ================= Initializations ===============
+
 "use strict";
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+
+
+// ================= Schemas ===============
 
 const taskSchema = new Schema({
   name: {

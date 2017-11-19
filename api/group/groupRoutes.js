@@ -1,7 +1,11 @@
+// ================= Initializations ===============
+
 "use strict";
 const groupController = require("./groupController"),
   passport = require("passport"),
   router = require("express").Router();
+
+// ================= Routes ===============
 
 router
   .route("/")
