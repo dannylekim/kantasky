@@ -9,7 +9,8 @@ const mongoose = require("mongoose"),
 exports.getGroup = function findGroup(req, res) {
   group.find({ _id: req.params.groupId }, function sendResponse(err, group) {
     if (err) {
-      res.send(err);
+      error.isOperational = true
+      next(err)
     } else {
       res.json(group);
     }
@@ -21,7 +22,10 @@ exports.createGroup = function setParametersAndSave(req, res) {
   req.body.teamLeader = req.params.userId;
   const newGroup = new group(req.body);
   group.save(function sendResponse(err, group) {
-    if (err) res.send(err);
+    if (err) {
+      error.isOperational = true
+      next(err)
+    }
     else {
       res.json(group);
     }
@@ -34,7 +38,8 @@ exports.deleteGroup = function findGroup(req, res) {
     foundGroup
   ) {
     if (err) {
-      res.send(err);
+      error.isOperational = true
+      next(err)
     } else {
       var users = [];
       var tasks = [];
@@ -52,7 +57,8 @@ exports.deleteGroup = function findGroup(req, res) {
               groupUser.groups.splice(i, 1);
               groupUser.save(function updatedUsers(err, updatedGroupUser) {
                 if (err) {
-                  res.send(err);
+                  error.isOperational = true
+                  next(err)
                   return;
                 }
               });
@@ -63,7 +69,8 @@ exports.deleteGroup = function findGroup(req, res) {
       });
       task.remove({ _id: { $in: tasks } }, function errorHandle(err, tasks) {
         if (err) {
-          res.send(err);
+          error.isOperational = true
+          next(err)
           return;
         }
       });
@@ -71,7 +78,10 @@ exports.deleteGroup = function findGroup(req, res) {
         err,
         removedGroup
       ) {
-        if (err) res.send(err);
+        if (err){
+          error.isOperational = true
+          next(err)
+        } 
         else {
           res.json({ message: "Group has successfully been removed" });
         }
@@ -86,7 +96,10 @@ exports.updateGroup = function findGroup(req, res) {
     req.body,
     { new: true },
     function sendResponse(err, group) {
-      if (err) res.send(err);
+      if (err){
+        error.isOperational = true
+        next(err)
+      }
       else {
         res.json(group);
       }
@@ -98,7 +111,10 @@ exports.updateGroup = function findGroup(req, res) {
 
 exports.getAllGroups = function findAllGroups(req, res) {
   group.find({}, function sendResponse(err, group) {
-    if (err) res.send(err);
+    if (err){
+      error.isOperational = true
+      next(err)
+    }
     else {
       res.json(group);
     }
