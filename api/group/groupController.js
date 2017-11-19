@@ -4,7 +4,7 @@ const mongoose = require("mongoose"),
   task = mongoose.model("Task"),
   group = mongoose.model("Group"),
   user = mongoose.model("User"),
-  auth = require("../../config/globalFunctions");
+  auth = require("../../config/authUtil");
 
 exports.getGroup = function findGroup(req, res) {
   group.find({ _id: req.params.groupId }, function sendResponse(err, group) {

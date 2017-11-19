@@ -6,9 +6,12 @@ const userModel = require("mongoose").model("User"),
 const verifyPassword = function findUser(userData, callback) {
   userModel.findOne({ username: userData.username }, (err, user) => {
     if (err) {
+      err.isOperational = true;
       callback(err);
     } else if (!user) {
-      callback("User is not found");
+      var error = new Error("User is not found")
+      error.isOperational = true;
+      callback(error);
     } else {
       user.isPasswordValid(userData.password, callback, user);
     }
@@ -19,6 +22,7 @@ const verifyPassword = function findUser(userData, callback) {
 const getUser = function findUserById(userId, callback) {
   userModel.findById(userId, (err, user) => {
     if (err) {
+      err.isOperational = true
       callback(err);
     } else {
       callback(null, user);
@@ -32,7 +36,9 @@ const isAdmin = function(token, callback) {
   token = token.replace("Bearer ", "")
   const user = jwt.decode(token)
   if(user.role[0] !== "admin"){
-    callback(new Error("Unauthorized Access. User does not have administrator privileges"))
+    var error = new Error("Unauthorized Access. User does not have administrator privileges")
+    error.isOperational = true;
+    callback(error)
   }
   else {
     callback(null, true)

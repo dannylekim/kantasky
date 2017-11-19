@@ -1,6 +1,6 @@
 //============ Setting up the Express environment ==================
 
-//TODO: Set this in APP.JS 
+//TODO: Set this in APP.JS
 const express = require("express"),
   app = express(),
   port = process.env.PORT || 4000,
@@ -17,9 +17,8 @@ const express = require("express"),
   extractJWT = passportJWT.ExtractJwt,
   jwtStrategy = passportJWT.Strategy,
   morgan = require("morgan"),
-  auth = require("./config/globalFunctions")
+  auth = require("./config/authUtil"),
   bcrypt = require("bcrypt");
-
 
 //============ Strategy Configuration ==================
 var jwtOptions = {};
@@ -37,8 +36,6 @@ var strategy = new jwtStrategy(jwtOptions, function(jwtPayload, callback) {
 });
 
 passport.use(strategy);
-
-//TODO: Look up serialize/deserialize user and verify if it's useful at all
 
 //======== Database Configuration =======================
 mongoose.Promise = global.Promise;
@@ -60,9 +57,30 @@ app.use(function sendResponse(req, res) {
     .send({ url: req.originalUrl + " is not a valid request URL" });
 }); //TODO: send a 404 template
 
+//============ Centralized Error Handler ===================
+app.use(function centralizedErrorHandler(err, req, res, next) {
+  if(!err.isOperational){
+    //log
+    res.send(err)
+    //process exit
+  }
+  res.send(err);
+});
+
 //=============== Start the Server =====================
 
 app.listen(port);
 console.log("Server started on port: " + port);
 
-//TODO: Create a router js that describes the routes
+// ===================  Catching Uncaught Errors ===================
+
+// FIXME: This should be freeing up resources, and all handlers and then restart the application and print the stack trace.
+process.on("uncaughtException", function(err) {
+  // handle the error safely
+
+  if(!err.isOperational){
+    console.log(err);
+    process.exit(1);
+  }
+ 
+});
