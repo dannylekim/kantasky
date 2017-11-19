@@ -14,7 +14,7 @@ const express = require("express"),
   jwtStrategy = passportJWT.Strategy,
   morgan = require("morgan"),
   auth = require("./config/authUtil"),
-  errorHandler = require("./config/errorUtil"),
+  errorHandler = require("./utility/errorUtil"),
   bcrypt = require("bcrypt");
 
 //============= Express Application Configuration ==========

@@ -1,7 +1,11 @@
+// ================= Initializations ===============
+
 "use strict";
 const mongoose = require("mongoose"),
   Schema = mongoose.Schema;
 
+
+// ================= Schema ===============  
 const groupSchema = new Schema({
   users: [
     {

@@ -1,11 +1,16 @@
+// ============== Initializations ===============
+
 "use strict";
 
 const mongoose = require("mongoose"),
   task = mongoose.model("Task"),
   group = mongoose.model("Group"),
   user = mongoose.model("User"),
-  auth = require("../../config/authUtil"),
-  errorHandler = require("../../config/errorUtil");
+  auth = require("../../utility/authUtil"),
+  errorHandler = require("../../utility/errorUtil");
+
+
+// ==================== Functions =================
 
 //very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
 //Either there's a solution in terms of the implementation of the api or the database model

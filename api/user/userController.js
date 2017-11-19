@@ -1,12 +1,16 @@
+// ============ Initializations =============
+
 "use strict";
 
 const mongoose = require("mongoose"),
   user = mongoose.model("User"),
-  auth = require("../../config/authUtil");
-(errorHandler = require("../../config/errorUtil")),
-  (bcrypt = require("bcrypt")),
-  (config = require("../../config/config")),
-  (jwt = require("jsonwebtoken"));
+  auth = require("../../utility/authUtil"),
+  errorHandler = require("../../utility/errorUtil"),
+  bcrypt = require("bcrypt"),
+  config = require("../../config/config"),
+  jwt = require("jsonwebtoken");
+
+// ================ Functions ==================
 
 exports.authenticate = function fieldChecks(req, res) {
   if (!req.body.username) {
@@ -145,11 +149,9 @@ exports.changePassword = function checkValidityOfPassword(req, res) {
       foundUser.set({ password: req.body.password });
       foundUser.save(function sendResponse(err, updatedUser) {
         if (err) {
-          err.isOperational = true
+          err.isOperational = true;
           next(err);
-        }
-        
-        else res.json(updatedUser);
+        } else res.json(updatedUser);
       });
     });
   }
