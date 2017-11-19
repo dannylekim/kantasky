@@ -2,7 +2,7 @@
 
 const mongoose = require("mongoose"),
   user = mongoose.model("User"),
-  auth = require("../../config/globalFunctions"),
+  auth = require("../../config/authUtil"),
   bcrypt = require("bcrypt"),
   config = require("../../config/config"),
   jwt = require("jsonwebtoken");

@@ -4,7 +4,7 @@ const mongoose = require("mongoose"),
   task = mongoose.model("Task"),
   group = mongoose.model("Group"),
   user = mongoose.model("User"),
-  auth = require("../../config/globalFunctions");
+  auth = require("../../config/authUtil");
 
 //very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
 //Either there's a solution in terms of the implementation of the api or the database model

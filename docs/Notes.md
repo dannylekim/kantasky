@@ -2,13 +2,14 @@
 
 ## Things to do next
 
-Test all the api routes using API tests
 Proper Error Handling -- https://stackoverflow.com/questions/7310521/node-js-best-practice-exception-handling
-Proper Logging -- Winston 
 Refactoring using awaits/promises 
-Require on Folders not Files
-API Documentation -- Swagger - https://www.youtube.com/watch?v=xggucT_xl5U
 Separate app and server files
+Proper Logging -- Winston 
+API Documentation -- Swagger - https://www.youtube.com/watch?v=xggucT_xl5U
+Require on Folders not Files
+Test all the api routes using API tests
+
 set NODE_ENV to production when out to prod
 Timer that tracks how long you're working on the task 
 Notifications/SMS/Email for invitations --> Socket based for notifications?
