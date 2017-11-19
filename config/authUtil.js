@@ -1,5 +1,6 @@
 const userModel = require("mongoose").model("User"),
-  jwt = require("jsonwebtoken");
+  jwt = require("jsonwebtoken"),
+  errorHandler = require("./errorHandler");
 
 //================= Verification ===================
 
@@ -8,9 +9,8 @@ const verifyPassword = function findUser(userData, callback) {
     if (err) {
       err.isOperational = true;
       callback(err);
-    } else if (!user) {
-      var error = new Error("User is not found")
-      error.isOperational = true;
+    } else if (!user) { 
+      const error = errorHandler.createOperationalHandler("User has not been found")
       callback(error);
     } else {
       user.isPasswordValid(userData.password, callback, user);
@@ -36,8 +36,7 @@ const isAdmin = function(token, callback) {
   token = token.replace("Bearer ", "")
   const user = jwt.decode(token)
   if(user.role[0] !== "admin"){
-    var error = new Error("Unauthorized Access. User does not have administrator privileges")
-    error.isOperational = true;
+    var error = errorHandler.createOperationalHandler("Access denied. User has no admin privileges.")
     callback(error)
   }
   else {
@@ -68,7 +67,6 @@ const isPasswordValid = function checkValidity(password) {
 const getIdFromToken = function decodeToken(token){
   return jwt.decode(token).id
 }
-
 
 exports.isAdmin = isAdmin;
 exports.getUser = getUser;
