@@ -19,7 +19,7 @@ const handleUncaughtException = function handleUncaughtException(err) {
   throw err;
 };
 
-const createOperationalError = function createError(message, status, next) {
+const createOperationalError = function createError(message, status) {
   var error = new Error(message);
   error.isOperational = true;
   error.status = status;

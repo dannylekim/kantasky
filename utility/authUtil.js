@@ -4,16 +4,23 @@ const userModel = require("mongoose").model("User"),
 
 //================= Verification ===================
 
-exports.verifyPassword = async userData => {
+
+/**
+ * Verifies the password by searching for the user and checking the hash
+ * 
+ * @param {any} userData 
+ * @returns 
+ */
+exports.verifyPassword = async (userData) => {
   try {
-    const user = await userModel.findOne({ username: userData.username });
+    const user = await userModel.findOne({ username: userData.username }); //database call for finding user
     if (!user) {
-      const err = errorHandler.createOperationalError(
-        "User has not been found"
+      let err = errorHandler.createOperationalError(
+        "User has not been found", 401
       );
       return Promise.reject(err);
     } else {
-      await user.isPasswordValid(userData.password);
+      await user.isPasswordValid(userData.password); 
       return Promise.resolve(user);
     }
   } catch (e) {
