@@ -13,7 +13,7 @@ const express = require("express"),
   extractJWT = passportJWT.ExtractJwt,
   jwtStrategy = passportJWT.Strategy,
   morgan = require("morgan"),
-  auth = require("./config/authUtil"),
+  auth = require("./utility/authUtil"),
   errorHandler = require("./utility/errorUtil"),
   bcrypt = require("bcrypt");
 
@@ -25,17 +25,13 @@ app.use(morgan("dev"));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/", router);
-app.use(function sendResponse(req, res) {
-  res
-    .status(404)
-    .send({ url: req.originalUrl + " is not a valid request URL" });
-}); //TODO: send a 404 template
+
+
+
 
 //============ Centralized Error Handler ===================
-app.use(function centralizedErrorHandler(err, req, res, next) {
-  errorHandler.handleError(err,req,res,next)
-});
 
+app.use(errorHandler.handleError)
 process.on("uncaughtException", function(err) {
     errorHandler.handleUncaughtException(err)
 })

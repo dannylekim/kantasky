@@ -32,3 +32,5 @@ router
     passport.authenticate("jwt", { session: false }),
     groupController.deleteGroup
   );
+
+  module.exports = router
