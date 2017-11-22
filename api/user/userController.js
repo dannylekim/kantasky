@@ -12,23 +12,45 @@ const mongoose = require("mongoose"),
 
 // ================ Functions ==================
 
-exports.authenticate = function fieldChecks(req, res) {
-  if (!req.body.username) {
-    errorHandler.createOperationalError("Please input a username");
-  } else if (!req.body.password) {
-    errorHandler.createOperationalError("Please input a password");
-  } else {
-    auth.verifyPassword(req.body, function sendResponse(err, result, user) {
-      if (err) {
-        next(err);
-      } else {
-        const payload = { id: user.id, role: user.role };
-        const token = jwt.sign(payload, config.secret, { expiresIn: "10h" });
-        res.json({ message: "Login Successful", token: token });
-      }
-    });
+exports.authenticate = async function(req, res, next){
+  try {
+    const AreNotEmptyFields = await fieldChecks(req, res, next);
+    if (AreNotEmptyFields) {
+      const user = await auth.verifyPassword(req.body);
+      const token = createJsonToken(user);
+      res.json({ message: "Login Successful", token: await token });
+    }
+  } catch (e) {
+    next(e);
   }
 };
+
+function createJsonToken(user) {
+  const payload = { id: user.id, role: user.role };
+  const token = jwt.sign(payload, config.secret, { expiresIn: "10h" });
+  return token;
+}
+
+function fieldChecks(req, res, next) {
+  return new Promise((resolve, reject) => {
+    if (!req.body.username) {
+      const err = errorHandler.createOperationalError(
+        "Please input a username",
+        null
+      );
+      reject(err);
+      return;
+    } else if (!req.body.password) {
+      const err = errorHandler.createOperationalError(
+        "Please input a password",
+        null
+      );
+      reject(err);
+    } else {
+      resolve(true);
+    }
+  });
+}
 
 exports.createUser = function isThePasswordValid(req, res) {
   if (!auth.isPasswordValid(req.body.password)) {

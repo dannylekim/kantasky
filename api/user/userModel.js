@@ -4,9 +4,9 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
+const errorHandler = require("../../utility/errorUtil");
 
 // ================= Functions ===============
-
 
 const userSchema = new Schema({
   email: {
@@ -56,16 +56,21 @@ const userSchema = new Schema({
   ]
 });
 
-userSchema.methods.isPasswordValid = function(password, callback, id) {
-  const storedHash = this.password;
-  bcrypt.compare(password, storedHash, function(err, res) {
-    if (err) {
-      console.log(err);
-      callback(err);
-    } else {
-      callback(null, res, id);
+userSchema.methods.isPasswordValid = async function(password) {
+  try {
+    const storedHash = this.password;
+    const res = await bcrypt.compare(password, storedHash);
+    if (!res) {
+      var error = errorHandler.createOperationalError(
+        "Wrong Password. Please Try Again."
+      );
+      return Promise.reject(error);
     }
-  });
+    return Promise.resolve();
+  } catch (e) {
+    e.isOperational = true;
+    return Promise.reject(e);
+  }
 };
 
 module.exports = mongoose.model("User", userSchema);

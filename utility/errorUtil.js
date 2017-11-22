@@ -1,26 +1,30 @@
-const handleError = function handleError(err, req, res, next) { 
-    if(!err.isOperational){
-        //log
-        res.send(err)
-        process.exit(1)
-    }
-    res.send(err)
-}
+const handleError = function handleError(err, req, res, next) {
 
-const handleUncaughtException = function handleUncaughtException(err) { 
-    if(!err.isOperational){
-        //log
-        console.log(err)
-        process.exit(1)
-    }
-    throw err
-}
+  if (!err.isOperational) {
+    //log
+    res.send(err.message);
+    process.exit(1);
+  }
+  if (err.status) res.status(status).send(err);
+  else res.send(err.message);
+};
 
-const createOperationalError = function createError(message) { 
-    var error = new Error(message)
-    error.isOperational = true 
-    next(error)
-}
+const handleUncaughtException = function handleUncaughtException(err) {
+  if (!err.isOperational) {
+    //log
+    console.log(err);
+    process.exit(1);
+  }
+ 
+  throw err;
+};
+
+const createOperationalError = function createError(message, status, next) {
+  var error = new Error(message);
+  error.isOperational = true;
+  error.status = status;
+  return error
+};
 
 exports.createOperationalError = createOperationalError;
 exports.handleError = handleError;
