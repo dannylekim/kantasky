@@ -56,13 +56,20 @@ const userSchema = new Schema({
   ]
 });
 
+
+/**
+ * Verifies the validity by comparing the tried password and the stored password
+ * 
+ * @param {any} password 
+ * @returns 
+ */
 userSchema.methods.isPasswordValid = async function(password) {
   try {
     const storedHash = this.password;
-    const res = await bcrypt.compare(password, storedHash);
+    const res = await bcrypt.compare(password, storedHash); // verification 
     if (!res) {
       var error = errorHandler.createOperationalError(
-        "Wrong Password. Please Try Again."
+        "Wrong Password. Please Try Again.", 401
       );
       return Promise.reject(error);
     }

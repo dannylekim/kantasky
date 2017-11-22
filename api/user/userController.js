@@ -12,39 +12,60 @@ const mongoose = require("mongoose"),
 
 // ================ Functions ==================
 
-exports.authenticate = async function(req, res, next){
+/**
+ * Tries to authenticate and verify the user with the credentials given 
+ * 
+ * @param {any} req has in the body a username and a password
+ * @param {any} res 
+ * @param {any} next moves on to the next handler
+ */
+exports.authenticate = async function(req, res, next) {
   try {
-    const AreNotEmptyFields = await fieldChecks(req, res, next);
-    if (AreNotEmptyFields) {
-      const user = await auth.verifyPassword(req.body);
-      const token = createJsonToken(user);
-      res.json({ message: "Login Successful", token: await token });
+    const isNotEmpty = await fieldChecks(req, res, next); //checks if the fields are empty or not
+    if (isNotEmpty) {
+      const user = await auth.verifyPassword(req.body); //verifies the hash and returns the user
+      const token = createJsonToken(user); //returns a token that gives the id and role
+      res.json({ message: "Login Successful", token: token });
     }
   } catch (e) {
-    next(e);
+    next(e); //sends to next handler
   }
 };
-
+/**
+ * Creates a JWT using the ID and Role as payload from the user object
+ * 
+ * @param {any} user 
+ * @returns 
+ */
 function createJsonToken(user) {
   const payload = { id: user.id, role: user.role };
   const token = jwt.sign(payload, config.secret, { expiresIn: "10h" });
   return token;
 }
 
+/**
+ * Verifies that there are no empty fields
+ * 
+ * @param {any} req has in the body a username and a password
+ * @param {any} res 
+ * @param {any} next moves on to the next handler
+ * @returns 
+ */
 function fieldChecks(req, res, next) {
   return new Promise((resolve, reject) => {
     if (!req.body.username) {
-      const err = errorHandler.createOperationalError(
+      let err = errorHandler.createOperationalError(
         "Please input a username",
-        null
+        401
       );
       reject(err);
       return;
     } else if (!req.body.password) {
-      const err = errorHandler.createOperationalError(
+      let err = errorHandler.createOperationalError(
         "Please input a password",
-        null
+        401
       );
+      err.status = 401;
       reject(err);
     } else {
       resolve(true);
