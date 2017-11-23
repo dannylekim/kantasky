@@ -15,6 +15,7 @@ const express = require("express"),
   morgan = require("morgan"),
   auth = require("./utility/authUtil"),
   errorHandler = require("./utility/errorUtil"),
+  cors = require("cors"),
   bcrypt = require("bcrypt");
 
 //============= Express Application Configuration ==========
@@ -22,6 +23,7 @@ const express = require("express"),
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
+app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/", router);
