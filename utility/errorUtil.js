@@ -5,7 +5,7 @@ const handleError = function handleError(err, req, res, next) {
     res.send(err.message);
     process.exit(1);
   }
-  if (err.status) res.status(status).send(err);
+  if (err.status) res.status(err.status).send(err.message);
   else res.send(err.message);
 };
 

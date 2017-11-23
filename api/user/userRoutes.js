@@ -6,8 +6,7 @@ const userController = require("./userController"),
   router = require("express").Router(),
   passport = require("passport");
 
-
-// ================= Routes ===============  
+// ================= Routes ===============
 router
   .route("/login")
   .post(userController.authenticate)
@@ -45,17 +44,10 @@ router
   );
 
 router
-  .route("/changePassword")
+  .route("/changePassword/:userId")
   .put(
     passport.authenticate("jwt", { session: false }),
     userController.changePassword
-  );
-
-router
-  .route("/updateAccount")
-  .put(
-    passport.authenticate("jwt", { session: false }),
-    userController.updateUser
   );
 
 module.exports = router;

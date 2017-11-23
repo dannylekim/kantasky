@@ -42,22 +42,30 @@ exports.getUser = function findUserById(userId, callback) {
 };
 
 //================= Authorization =============================
-
-exports.isAdmin = function(token, callback) {
-  token = token.replace("Bearer ", "");
-  const user = jwt.decode(token);
-  if (user.role[0] !== "admin") {
-    var error = errorHandler.createOperationalError(
-      "Access denied. User has no admin privileges."
-    );
-    callback(error);
-  } else {
-    callback(null, true);
-  }
+/**
+ * Checks the token for admin privileges
+ * 
+ * @param {any} token has the ID and Role
+ * @returns error or resolve
+ */
+exports.isAdmin = (token) => {
+  return new Promise((resolve, reject) => {
+    token = token.replace("Bearer ", "");
+    const user = jwt.decode(token); //decodes the token
+    if (user.role[0] !== "admin") {
+      const error = errorHandler.createOperationalError(
+        "Access denied. User has no admin privileges.",
+        401
+      );
+      return reject(error);
+    }
+    return resolve();
+  });
 };
+
 /**
  * Checks for number of characters, alphanumeric and case sensitive in the passwords.
- * 
+ *
  * @param {any} password the password
  * @returns returns control back to the caller
  */
