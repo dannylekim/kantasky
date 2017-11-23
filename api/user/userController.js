@@ -16,7 +16,7 @@ const mongoose = require("mongoose"),
  * Tries to authenticate and verify the user with the credentials given 
  * 
  * @param {any} req has in the body a username and a password
- * @param {any} res 
+ * @param {any} res goal is to return a token that has ID and role
  * @param {any} next moves on to the next handler
  */
 exports.authenticate = async function(req, res, next) {
@@ -27,8 +27,8 @@ exports.authenticate = async function(req, res, next) {
       const token = createJsonToken(user); //returns a token that gives the id and role
       res.json({ message: "Login Successful", token: token });
     }
-  } catch (e) {
-    next(e); //sends to next handler
+  } catch (err) {
+    next(err); //sends to next handler
   }
 };
 /**
@@ -73,48 +73,47 @@ function fieldChecks(req, res, next) {
   });
 }
 
-exports.createUser = function isThePasswordValid(req, res) {
-  if (!auth.isPasswordValid(req.body.password)) {
-    errorHandler.createOperationalError("Password is not valid");
-    return;
-  }
-  user.find({ username: req.body.username }, function userChecksAndHash(
-    err,
-    user
-  ) {
-    if (err) {
-      err.isOperational = true;
-      next(err);
-    } else if (user)
-      errorHandler.createOperationalError("This user already exists!");
-    else {
-      user.find({ email: req.body.email }, function(err, user) {
-        if (err) {
-          err.isOperational = true;
-          next(err);
-        } else if (user)
-          errorHandler.createOperationalError("This email is already in use!");
-        else {
-          bcrypt.hash(req.body.password, 10, function saveNewUser(err, hash) {
-            req.body.password = hash;
-            const newUser = new user(req.body);
-            newUser.save(function sendResponse(err, user) {
-              if (err) {
-                err.isOperational = true;
-                next(err);
-              } else {
-                user.password = undefined;
-                user.role = undefined;
-                res.json(user);
-              }
-            });
-          });
-        }
-      });
-    }
-  });
-};
+/**
+ * Creates a user in the database
+ * 
+ * @param {any} req has all the fields necessary 
+ * @param {any} res returns the newly created user
+ * @param {any} next error handler
+ */
+exports.createUser = async function isThePasswordValid(req, res, next) {
+  try{
+    await auth.isPasswordValid(req.body.password);
+    let foundUser = (await user.find({username: req.body.username}))[0]
 
+    //Finding user checks. If username or email already exists in the db, then reject
+    if(foundUser){
+      const error = errorHandler.createOperationalError("A user with this username already exists, please choose another one.")
+      next(error)
+      return
+    }
+    foundUser = (await user.find({ email: req.body.email }))[0]
+    if(foundUser){
+      const error = errorHandler.createOperationalError("This email is already in use!")
+      next(error)
+      return
+    }
+
+    //hash the password, save it into the database and then return the user without password or role
+    const hashedPassword = await bcrypt.hash(req.body.password, 10)
+    req.body.password = hashedPassword
+    const newUser = new user(req.body)
+    foundUser = await newUser.save()
+    foundUser.password = undefined
+    foundUser.role = undefined 
+    res.json(foundUser)
+  }
+  catch(err){
+    err.isOperational = true
+    next(err)
+  }
+}
+  
+        
 exports.getAllUsers = function isThisAdmin(req, res) {
   auth.isAdmin(req.get("authorization"), function findAllUsers(err, isAdmin) {
     if (err) {
