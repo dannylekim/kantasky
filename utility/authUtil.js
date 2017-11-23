@@ -4,28 +4,28 @@ const userModel = require("mongoose").model("User"),
 
 //================= Verification ===================
 
-
 /**
  * Verifies the password by searching for the user and checking the hash
- * 
- * @param {any} userData 
- * @returns 
+ *
+ * @param {any} userData
+ * @returns
  */
-exports.verifyPassword = async (userData) => {
+exports.verifyPassword = async userData => {
   try {
     const user = await userModel.findOne({ username: userData.username }); //database call for finding user
     if (!user) {
       let err = errorHandler.createOperationalError(
-        "User has not been found", 401
+        "User has not been found",
+        401
       );
       return Promise.reject(err);
     } else {
-      await user.isPasswordValid(userData.password); 
+      await user.isPasswordValid(userData.password);
       return Promise.resolve(user);
     }
-  } catch (e) {
-    e.isOperational = true;
-    return Promise.reject(e);
+  } catch (err) {
+    err.isOperational = true;
+    return Promise.reject(err);
   }
 };
 
@@ -55,17 +55,46 @@ exports.isAdmin = function(token, callback) {
     callback(null, true);
   }
 };
-
+/**
+ * Checks for number of characters, alphanumeric and case sensitive in the passwords.
+ * 
+ * @param {any} password the password
+ * @returns returns control back to the caller
+ */
 exports.isPasswordValid = function checkValidity(password) {
-  let isPasswordValid = true;
-  //parse password
-  if (password > 160) isPasswordValid = false;
-  if (!/\d/.test(password)) isPasswordValid = false;
-  if (!/[a-z]/.test(password)) isPasswordValid = false;
-  if (!/[A-Z]/.test(password)) isPasswordValid = false;
-  if (/[^0-9a-zA-Z]/.test(password)) isPasswordValid = false;
-
-  return isPasswordValid;
+  return new Promise((resolve, reject) => {
+    if (password > 160)
+      return reject(
+        errorHandler.createOperationalError(
+          "Too many characters. Password must not be over 160 characters"
+        )
+      );
+    if (!/\d/.test(password))
+      return reject(
+        errorHandler.createOperationalError(
+          "Password must contain at least a numeric character."
+        )
+      );
+    if (!/[a-z]/.test(password))
+      return reject(
+        errorHandler.createOperationalError(
+          "Password must contain at least a lower case character."
+        )
+      );
+    if (!/[A-Z]/.test(password))
+      return reject(
+        errorHandler.createOperationalError(
+          "Password must contain at least an upper case character."
+        )
+      );
+    if (!/[^0-9a-zA-Z]/.test(password))
+      return reject(
+        errorHandler.createOperationalError(
+          "Password must contain at least a symbol character."
+        )
+      );
+    return resolve();
+  });
 };
 
 //================ Decode =========================
