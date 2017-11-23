@@ -13,13 +13,13 @@ const mongoose = require("mongoose"),
 // ================ Functions ==================
 
 /**
- * Tries to authenticate and verify the user with the credentials given 
- * 
+ * Tries to authenticate and verify the user with the credentials given
+ *
  * @param {any} req has in the body a username and a password
  * @param {any} res goal is to return a token that has ID and role
  * @param {any} next moves on to the next handler
  */
-exports.authenticate = async function(req, res, next) {
+exports.authenticate = async (req, res, next) => {
   try {
     const isNotEmpty = await fieldChecks(req, res, next); //checks if the fields are empty or not
     if (isNotEmpty) {
@@ -28,14 +28,15 @@ exports.authenticate = async function(req, res, next) {
       res.json({ message: "Login Successful", token: token });
     }
   } catch (err) {
+    err.isOperational = true;
     next(err); //sends to next handler
   }
 };
 /**
  * Creates a JWT using the ID and Role as payload from the user object
- * 
- * @param {any} user 
- * @returns 
+ *
+ * @param {any} user
+ * @returns
  */
 function createJsonToken(user) {
   const payload = { id: user.id, role: user.role };
@@ -45,11 +46,11 @@ function createJsonToken(user) {
 
 /**
  * Verifies that there are no empty fields
- * 
+ *
  * @param {any} req has in the body a username and a password
- * @param {any} res 
+ * @param {any} res
  * @param {any} next moves on to the next handler
- * @returns 
+ * @returns
  */
 function fieldChecks(req, res, next) {
   return new Promise((resolve, reject) => {
@@ -75,61 +76,61 @@ function fieldChecks(req, res, next) {
 
 /**
  * Creates a user in the database
- * 
- * @param {any} req has all the fields necessary 
+ *
+ * @param {any} req has all the fields necessary
  * @param {any} res returns the newly created user
  * @param {any} next error handler
  */
-exports.createUser = async function isThePasswordValid(req, res, next) {
-  try{
+exports.createUser = async (req, res, next) => {
+  try {
     await auth.isPasswordValid(req.body.password);
-    let foundUser = (await user.find({username: req.body.username}))[0]
+    let foundUser = (await user.find({ username: req.body.username }))[0];
 
     //Finding user checks. If username or email already exists in the db, then reject
-    if(foundUser){
-      const error = errorHandler.createOperationalError("A user with this username already exists, please choose another one.")
-      next(error)
-      return
+    if (foundUser) {
+      const error = errorHandler.createOperationalError(
+        "A user with this username already exists, please choose another one."
+      );
+      next(error);
+      return;
     }
-    foundUser = (await user.find({ email: req.body.email }))[0]
-    if(foundUser){
-      const error = errorHandler.createOperationalError("This email is already in use!")
-      next(error)
-      return
+    foundUser = (await user.find({ email: req.body.email }))[0];
+    if (foundUser) {
+      const error = errorHandler.createOperationalError(
+        "This email is already in use!"
+      );
+      next(error);
+      return;
     }
 
     //hash the password, save it into the database and then return the user without password or role
-    const hashedPassword = await bcrypt.hash(req.body.password, 10)
-    req.body.password = hashedPassword
-    const newUser = new user(req.body)
-    foundUser = await newUser.save()
-    foundUser.password = undefined
-    foundUser.role = undefined 
-    res.json(foundUser)
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    req.body.password = hashedPassword;
+    const newUser = new user(req.body);
+    foundUser = await newUser.save();
+    foundUser.password = undefined;
+    foundUser.role = undefined;
+    res.json(foundUser);
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
   }
-  catch(err){
-    err.isOperational = true
-    next(err)
+};
+/**
+ * Gets all the users. Requires Admin token.
+ *
+ * @param {any} req N/A
+ * @param {any} res Returns all users
+ */
+exports.getAllUsers = async (req, res) => {
+  try {
+    await auth.isAdmin(req.get("authorization"));
+    const foundUser = await user.find({});
+    res.json(foundUser);
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
   }
-}
-  
-        
-exports.getAllUsers = function isThisAdmin(req, res) {
-  auth.isAdmin(req.get("authorization"), function findAllUsers(err, isAdmin) {
-    if (err) {
-      err.isOperational = true;
-      next(err);
-    } else {
-      user.find({}, function sendResponse(err, user) {
-        if (err) {
-          err.isOperational = true;
-          next(err);
-        } else {
-          res.json(user);
-        }
-      });
-    }
-  });
 };
 
 exports.deleteUser = function checkAdmin(req, res) {
@@ -153,48 +154,69 @@ exports.deleteUser = function checkAdmin(req, res) {
     }
   });
 };
+/**
+ * Updates a users first name, last name and email 
+ * 
+ * @param {any} req contains one of the above
+ * @param {any} res 
+ * @param {any} next 
+ */
+exports.updateUser = async (req, res, next) => {
+  //place new values into an object
+  let updatedUser;
+  if (req.body.firstName) updatedUser.firstName = req.body.firstName;
+  if (req.body.lastName) updatedUser.lastName = req.body.lastName;
+  if (req.body.email) updatedUser.email = req.body.email;
+  if(!updatedUser) return
+  try {
+    let foundUser = (await user.find({ _id: req.params.userId }))[0];
+    foundUser.set(updatedUser); //update the user
+    foundUser = await foundUser.save();
+    res.json(foundUser);
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
+  }
+};
 
-exports.updateUser = function replaceFields(req, res) {
-  var updateUser = {};
-  if (req.body.firstName) {
-    updatedUser.firstName = req.body.firstName;
-  }
-  if (req.body.lastName) {
-    updatedUser.lastName = req.body.lastName;
-  }
-  if (req.body.email) {
-    updatedUser.email = req.body.email;
-  }
+/**
+ * Allows user to change password
+ * 
+ * @param {any} req new password
+ * @param {any} res returns success json
+ * @param {any} next error Handler
+ */
+exports.changePassword = async (req, res, next) => {
 
-  user.find({ _id: req.params.userId }, function updateTheUser(err, foundUser) {
-    if (err) {
-      err.isOperational;
-      next(err);
-    } else {
-      user.set(updatedUser);
-      user.save(function sendResponse(err, updatedUser) {
-        if (err) {
-          err.isOperational = true;
-          next(err);
-        } else res.json(updatedUser);
-      });
+  //check for empty
+  if(!req.body.password) {
+    const error = errorHandler.createOperationalError("Please input a password")
+    next(error)
+    return
+  } 
+  try{
+    //check to see if properly valid and secure
+    await auth.isPasswordValid(req.body.password)
+    let foundUser = (await user.find({ _id: req.params.userId }))[0]
+
+    //check if old password
+    const isOldPassword = await bcrypt.compare(req.body.password, foundUser.password)
+    if(isOldPassword) {
+      const error = errorHandler.createOperationalError("Please input a new password")
+      next(error)
+      return
     }
-  });
-};
 
-exports.changePassword = function checkValidityOfPassword(req, res) {
-  if (req.body.password && auth.isPasswordValid(req.body.password)) {
-    user.find({ _id: req.params.id }, function setTheParameters(
-      err,
-      foundUser
-    ) {
-      foundUser.set({ password: req.body.password });
-      foundUser.save(function sendResponse(err, updatedUser) {
-        if (err) {
-          err.isOperational = true;
-          next(err);
-        } else res.json(updatedUser);
-      });
-    });
+    //set the new password
+    const hashedPassword =  await bcrypt.hash(req.body.password, 10); 
+    foundUser.set({ password: hashedPassword });
+    await foundUser.save()
+    res.json({message: "Password has successfully been changed"})
   }
-};
+  catch(err){
+    err.isOperational = true
+    next(error)
+  }
+}
+
+
