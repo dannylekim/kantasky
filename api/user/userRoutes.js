@@ -40,7 +40,7 @@ router
   )
   .put(
     passport.authenticate("jwt", { session: false }),
-    userController.updateUser
+    userController.updateAccountInformation
   );
 
 router

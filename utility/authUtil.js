@@ -55,7 +55,7 @@ exports.isAdmin = (token) => {
     if (user.role[0] !== "admin") {
       const error = errorHandler.createOperationalError(
         "Access denied. User has no admin privileges.",
-        401
+        403
       );
       return reject(error);
     }

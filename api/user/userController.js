@@ -122,7 +122,7 @@ exports.createUser = async (req, res, next) => {
  * @param {any} req N/A
  * @param {any} res Returns all users
  */
-exports.getAllUsers = async (req, res) => {
+exports.getAllUsers = async (req, res, next) => {
   try {
     await auth.isAdmin(req.get("authorization"));
     const foundUser = await user.find({});
@@ -133,6 +133,8 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+
+//TODO: Need to implement this to delete all tasks and groups
 exports.deleteUser = function checkAdmin(req, res) {
   auth.isAdmin(req.get("authorization"), function removeUser(err, isAdmin) {
     if (err) {
@@ -154,6 +156,7 @@ exports.deleteUser = function checkAdmin(req, res) {
     }
   });
 };
+
 /**
  * Updates a users first name, last name and email 
  * 
@@ -161,15 +164,18 @@ exports.deleteUser = function checkAdmin(req, res) {
  * @param {any} res 
  * @param {any} next 
  */
-exports.updateUser = async (req, res, next) => {
+exports.updateAccountInformation = async (req, res, next) => {
   //place new values into an object
-  let updatedUser;
+  let updatedUser = {};
   if (req.body.firstName) updatedUser.firstName = req.body.firstName;
   if (req.body.lastName) updatedUser.lastName = req.body.lastName;
   if (req.body.email) updatedUser.email = req.body.email;
-  if(!updatedUser) return
+  if((!updatedUser.firstName && !updatedUser.lastName && !updatedUser.email)) {
+    const err = errorHandler.createOperationalError("You need to change at least one thing!")
+    next(err)
+  }
   try {
-    let foundUser = (await user.find({ _id: req.params.userId }))[0];
+    let foundUser = await user.findOne({ _id: req.params.userId });
     foundUser.set(updatedUser); //update the user
     foundUser = await foundUser.save();
     res.json(foundUser);
