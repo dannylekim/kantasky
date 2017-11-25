@@ -10,18 +10,25 @@ const groupSchema = new Schema({
   users: [
     {
       userId: String,
-      taskId: []
+      taskId: [],
+      _id: false
     }
   ],
   name: {
     type: String,
-    required: "Please input a name for the group"
+    required: "Please input a name for the group."
   },
   createdDate: {
     type: Date,
     default: Date.now
   },
-  teamLeader: String
+  teamLeader: String,
+  category: {
+    type: String,
+    enum: ['group', 'personal'],
+    required: "Need to specify the category of this group.",
+    _id: false
+  }
 });
 
 module.exports = mongoose.model("Group", groupSchema);

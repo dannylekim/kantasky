@@ -137,32 +137,25 @@ exports.deleteTask = function removeTheTask(req, res) {
   );
 };
 
+
 //=================== Admin Functions =======================
-
-exports.getAllTasks = function checkIfAdmin(req, res) {
-  auth.isAdmin(req.get("authorization"), function findTasks(err, isAdmin) {
-    if (err) {
-      error.isOperational = true;
-      next(err);
-    } else {
-      task.find({}, function sendResponse(err, task) {
-        if (err) {
-          error.isOperational = true;
-          next(err);
-        } else res.json(task);
-      });
-    }
-  });
+/**
+ *  Admin route. Gets all the tasks in the database. 
+ * 
+ * @param {any} req 
+ * @param {any} res Returns all tasks
+ * @param {any} next Error Handler
+ */
+exports.getAllTasks = async (req, res, next) => {
+  try {
+    await auth.isAdmin(req.get("authorization"));
+    const foundTask = await task.find({});
+    res.json(foundTask);
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
+  }
 };
 
-// ===== Obsolete ====================
-exports.getTask = function LookForTask(req, res) {
-  task.findById(req.params.taskId, function sendResponse(err, task) {
-    if (err) {
-      error.isOperational = true;
-      next(err);
-    } else res.json(task);
-  });
-};
 
-//promises not callbacks
+
