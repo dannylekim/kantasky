@@ -22,7 +22,10 @@ const groupSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  teamLeader: String,
+  teamLeader: {
+    name: String, 
+    leaderId: String,
+  },
   category: {
     type: String,
     enum: ['group', 'personal'],
