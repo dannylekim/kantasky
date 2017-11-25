@@ -116,22 +116,7 @@ exports.createUser = async (req, res, next) => {
     next(err);
   }
 };
-/**
- * Gets all the users. Requires Admin token.
- *
- * @param {any} req N/A
- * @param {any} res Returns all users
- */
-exports.getAllUsers = async (req, res, next) => {
-  try {
-    await auth.isAdmin(req.get("authorization"));
-    const foundUser = await user.find({});
-    res.json(foundUser);
-  } catch (err) {
-    err.isOperational = true;
-    next(err);
-  }
-};
+
 
 
 //TODO: Need to implement this to delete all tasks and groups
@@ -170,7 +155,9 @@ exports.updateAccountInformation = async (req, res, next) => {
   if (req.body.firstName) updatedUser.firstName = req.body.firstName;
   if (req.body.lastName) updatedUser.lastName = req.body.lastName;
   if (req.body.email) updatedUser.email = req.body.email;
-  if((!updatedUser.firstName && !updatedUser.lastName && !updatedUser.email)) {
+  
+  //if all empty fields, reject
+  if((!(updatedUser.firstName || updatedUser.lastName || updatedUser.email))) {
     const err = errorHandler.createOperationalError("You need to change at least one thing!")
     next(err)
   }
@@ -226,3 +213,20 @@ exports.changePassword = async (req, res, next) => {
 }
 
 
+//=============== Admin Functions ================
+/**
+ * Gets all the users. Requires Admin token.
+ *
+ * @param {any} req N/A
+ * @param {any} res Returns all users
+ */
+exports.getAllUsers = async (req, res, next) => {
+  try {
+    await auth.isAdmin(req.get("authorization"));
+    const foundUser = await user.find({});
+    res.json(foundUser);
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
+  }
+};
