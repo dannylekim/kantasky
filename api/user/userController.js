@@ -178,7 +178,7 @@ exports.updateAccountInformation = async (req, res, next) => {
     let foundUser = await user.findOne({ _id: req.params.userId });
     foundUser.set(updatedUser); //update the user
     foundUser = await foundUser.save();
-    res.json(foundUser);
+    res.json({message: "Successfully updated the user's information."});
   } catch (err) {
     err.isOperational = true;
     next(err);

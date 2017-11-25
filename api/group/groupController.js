@@ -6,7 +6,8 @@ const mongoose = require("mongoose"),
   task = mongoose.model("Task"),
   group = mongoose.model("Group"),
   user = mongoose.model("User"),
-  auth = require("../../utility/authUtil");
+  auth = require("../../utility/authUtil"),
+  errorHandler = require("../../utility/errorUtil");
 
 // ============== Functions ===================
 
@@ -21,18 +22,34 @@ exports.getGroup = function findGroup(req, res) {
   });
 };
 
-exports.createGroup = function setParametersAndSave(req, res) {
-  req.body.users = [{ userId: req.params.userId, taskId: [] }];
-  req.body.teamLeader = req.params.userId;
-  const newGroup = new group(req.body);
-  group.save(function sendResponse(err, group) {
-    if (err) {
-      error.isOperational = true;
-      next(err);
-    } else {
-      res.json(group);
+
+/**
+ * Creates a group and adds the group to the user Id
+ * 
+ * @param {any} req takes in Name, and Category type in body. Params must have userId
+ * @param {any} res returns the new group
+ * @param {any} next error handler
+ */
+exports.createGroup = async (req, res, next) => {
+  try {
+    let foundUser = await user.findOne({_id: req.params.userId})
+    req.body.users = [{ userId: req.params.userId, taskId: [] }];
+    req.body.teamLeader = req.params.userId;
+    let newGroup = new group(req.body);
+    newGroup = await newGroup.save();
+    const groupObj = {
+      "category": req.body.category,
+      "groupId": newGroup["_id"]
     }
-  });
+    const updatedUser = foundUser.groups.push(groupObj)
+    
+    foundUser.set(updatedUser)
+    foundUser = await foundUser.save()
+    res.json(newGroup);
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
+  }
 };
 
 exports.deleteGroup = function findGroup(req, res) {

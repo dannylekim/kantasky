@@ -44,7 +44,8 @@ const userSchema = new Schema({
         type: String,
         enum: ["group", "personal"]
       },
-      groupId: String
+      groupId: String,
+      _id: false
     }
   ],
   notifications: [],

@@ -20,7 +20,6 @@ router
 
 router
   .route("/:taskId")
-  .get(passport.authenticate("jwt", { session: false }), taskController.getTask)
   .put(
     passport.authenticate("jwt", { session: false }),
     taskController.updateTask
