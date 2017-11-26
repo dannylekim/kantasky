@@ -7,6 +7,8 @@ Refactoring using awaits/promises while documenting
 Proper Logging -- Winston 
 Test all the api routes using API tests
 
+Instead of giving errors at 200, maybe at 500 for status?
+
 
 Timer that tracks how long you're working on the task 
 Notifications/SMS/Email for invitations --> Socket based for notifications? (socket.io)

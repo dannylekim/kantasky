@@ -27,6 +27,8 @@ exports.getGroup = async (req, res, next) => {
   }
 };
 
+
+//TODO: Add a general user so that you can have non-associated tasks in the group. This would mean you need to change: updateGroup and createTaskInGroup as well
 /**
  * Creates a group and adds the group to the user Id
  *
@@ -38,13 +40,17 @@ exports.createGroup = async (req, res, next) => {
   try {
     //initialize body and all necessary values
     let foundUser = await user.findOne({ _id: req.params.userId });
-    req.body.users = [{ userId: req.params.userId, taskId: [] }];
+    req.body.users = [{ userId: req.params.userId, taskId: [] }]; 
+    if(req.body.category === 'group') req.body.users.push({userId: 'General', taskId: []})
     req.body.teamLeader = {
       leaderId: req.params.userId,
       name: foundUser.firstName + " " + foundUser.lastName
     };
+    //save the group to the database
     let newGroup = new group(req.body);
     newGroup = await newGroup.save();
+
+    //push the group to the user
     const groupObj = {
       category: req.body.category,
       groupId: newGroup["_id"]
@@ -61,6 +67,7 @@ exports.createGroup = async (req, res, next) => {
   }
 };
 
+//TODO: 
 exports.deleteGroup = function findGroup(req, res) {
   group.find({ _id: req.params.groupId }, function pullUsersAndTasks(
     err,
@@ -119,39 +126,51 @@ exports.deleteGroup = function findGroup(req, res) {
 };
 
 
-//TODO: Check if Users and Team Leaders can be changed
-
 /**
  * Updates the group. The fields edited are teamLeader, Users and the group name. Changing team Leader and Users requires that
- * the group is category group and that the requester is a team leader. 
- * 
+ * the group is category group and that the requester is a team leader.
+ *
  * @param {any} req Team Leader, users and group name are in the body. Params is group Id
  * @param {any} res returns a message indicating that the group has been updated
  * @param {any} next error handler
- * @returns 
+ * @returns
  */
 exports.updateGroup = async (req, res, next) => {
-  const token = req.get("authorization").replace("Bearer ", "")
+  const token = req.get("authorization").replace("Bearer ", "");
   const tokenId = auth.getIdFromToken(token);
   //updating variables
   let newGroupInformation = {};
   if (req.body.name) newGroupInformation.name = req.body.name;
-  if (req.body.teamLeader) newGroupInformation.teamLeader = req.body.teamLeader;
-  if (req.body.users) newGroupInformation.users = req.body.users;
+  if (req.body.users) newGroupInformation.users = req.body.users; //TODO: Check all users to be valid and that General is present
 
-  //if all empty fields, reject
-  if (!(req.body.users || req.body.name || req.body.teamLeader)) {
-    const err = errorHandler.createOperationalError(
-      "You need to change at least one thing!"
-    );
-    next(err);
-    return;
-  }
+
   try {
+    //does the group exist
     let foundGroup = await group.findOne({ _id: req.params.groupId });
 
+    //if leaderId is filled, check if it's a valid user and fill the obj appropriately
+    if (req.body.leaderId) {
+      const foundLeader = await user.findOne({
+        _id: req.body.leaderId
+      });
+      newGroupInformation.teamLeader = {
+        name: foundLeader.firstName + " " + foundLeader.lastName,
+        leaderId: foundLeader._id
+      };
+    }
+    
+
+    //if all empty fields, reject
+    if (!(req.body.users || req.body.name || req.body.leaderId)) {
+      const err = errorHandler.createOperationalError(
+        "You need to change at least one thing!"
+      );
+      next(err);
+      return;
+    }
+
     //If it isn't the team leader who's updated, reject request
-    if (foundGroup.teamLeader.leaderId != tokenId) {
+    if (foundGroup.teamLeader.leaderId !== tokenId) {
       const err = errorHandler.createOperationalError(
         "Only the Team Leader can update the group!"
       );
