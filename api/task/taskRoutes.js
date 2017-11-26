@@ -5,14 +5,17 @@ const taskController = require("./taskController"),
   passport = require("passport"),
   router = require("express").Router();
 
-// ================= Schemas ===============  
+// ================= Schemas ===============
 
 router
   .route("/:userId")
   .get(
     passport.authenticate("jwt", { session: false }),
     taskController.getUsersTask
-  )
+  );
+
+router
+  .route("/:groupId/:userId")
   .post(
     passport.authenticate("jwt", { session: false }),
     taskController.createTaskInGroup
