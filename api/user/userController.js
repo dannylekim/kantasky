@@ -12,6 +12,7 @@ const mongoose = require("mongoose"),
 
 // ================ Functions ==================
 
+//TODO: Login by Email?
 /**
  * Tries to authenticate and verify the user with the credentials given
  *
@@ -74,6 +75,7 @@ function fieldChecks(req, res, next) {
   });
 }
 
+//TODO: Verify email
 /**
  * Creates a user in the database
  *
@@ -94,7 +96,7 @@ exports.createUser = async (req, res, next) => {
       next(error);
       return;
     }
-    foundUser = (await user.find({ email: req.body.email }))[0];
+    foundUser = await user.findOne({ email: req.body.email });
     if (foundUser) {
       const error = errorHandler.createOperationalError(
         "This email is already in use!"
@@ -116,8 +118,6 @@ exports.createUser = async (req, res, next) => {
     next(err);
   }
 };
-
-
 
 //TODO: Need to implement this to delete all tasks and groups
 exports.deleteUser = function checkAdmin(req, res) {
@@ -143,11 +143,11 @@ exports.deleteUser = function checkAdmin(req, res) {
 };
 
 /**
- * Updates a users first name, last name and email 
- * 
+ * Updates a users first name, last name and email
+ *
  * @param {any} req contains one of the above
- * @param {any} res 
- * @param {any} next 
+ * @param {any} res
+ * @param {any} next
  */
 exports.updateAccountInformation = async (req, res, next) => {
   //place new values into an object
@@ -155,17 +155,29 @@ exports.updateAccountInformation = async (req, res, next) => {
   if (req.body.firstName) updatedUser.firstName = req.body.firstName;
   if (req.body.lastName) updatedUser.lastName = req.body.lastName;
   if (req.body.email) updatedUser.email = req.body.email;
-  
+
   //if all empty fields, reject
-  if((!(updatedUser.firstName || updatedUser.lastName || updatedUser.email))) {
-    const err = errorHandler.createOperationalError("You need to change at least one thing!")
-    next(err)
+  if (!(updatedUser.firstName || updatedUser.lastName || updatedUser.email)) {
+    const err = errorHandler.createOperationalError(
+      "You need to change at least one thing!"
+    );
+    next(err);
   }
   try {
     let foundUser = await user.findOne({ _id: req.params.userId });
+
+    //verify user is in db
+    if (!foundUser) {
+      const err = errorHandler.createOperationalError(
+        "User is not found in the database",
+        500
+      );
+      next(err);
+      return;
+    }
     foundUser.set(updatedUser); //update the user
     foundUser = await foundUser.save();
-    res.json({message: "Successfully updated the user's information."});
+    res.json({ message: "Successfully updated the user's information." });
   } catch (err) {
     err.isOperational = true;
     next(err);
@@ -174,44 +186,55 @@ exports.updateAccountInformation = async (req, res, next) => {
 
 /**
  * Allows user to change password
- * 
+ *
  * @param {any} req new password
  * @param {any} res returns success json
  * @param {any} next error Handler
  */
 exports.changePassword = async (req, res, next) => {
-
   //check for empty
-  if(!req.body.password) {
-    const error = errorHandler.createOperationalError("Please input a password")
-    next(error)
-    return
-  } 
-  try{
+  if (!req.body.password) {
+    const error = errorHandler.createOperationalError(
+      "Please input a password"
+    );
+    next(error);
+    return;
+  }
+  try {
     //check to see if properly valid and secure
-    await auth.isPasswordValid(req.body.password)
-    let foundUser = (await user.find({ _id: req.params.userId }))[0]
+    await auth.isPasswordValid(req.body.password);
+    let foundUser = await user.findOne({ _id: req.params.userId });
 
-    //check if old password
-    const isOldPassword = await bcrypt.compare(req.body.password, foundUser.password)
-    if(isOldPassword) {
-      const error = errorHandler.createOperationalError("Please input a new password")
-      next(error)
+    //verify if in db
+    if(!foundUser){
+      const err = errorHandler.createOperationalError("Use does not exist in the database", 500)
+      next(err)
       return
     }
 
-    //set the new password
-    const hashedPassword =  await bcrypt.hash(req.body.password, 10); 
-    foundUser.set({ password: hashedPassword });
-    await foundUser.save()
-    res.json({message: "Password has successfully been changed"})
-  }
-  catch(err){
-    err.isOperational = true
-    next(error)
-  }
-}
+    //check if old password
+    const isOldPassword = await bcrypt.compare(
+      req.body.password,
+      foundUser.password
+    );
+    if (isOldPassword) {
+      const error = errorHandler.createOperationalError(
+        "Please input a new password"
+      );
+      next(error);
+      return;
+    }
 
+    //set the new password
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    foundUser.set({ password: hashedPassword });
+    await foundUser.save();
+    res.json({ message: "Password has successfully been changed" });
+  } catch (err) {
+    err.isOperational = true;
+    next(error);
+  }
+};
 
 //=============== Admin Functions ================
 /**

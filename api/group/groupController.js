@@ -40,6 +40,15 @@ exports.createGroup = async (req, res, next) => {
   try {
     //initialize body and all necessary values
     let foundUser = await user.findOne({ _id: req.params.userId });
+    
+    //if user doesn't exist, return
+    if(!foundUser){
+      const err = errorHandler.createOperationalError("User does not exist in the database!", 500)
+      next(err)
+      return
+    }
+
+
     req.body.users = [{ userId: req.params.userId, taskId: [] }]; 
     if(req.body.category === 'group') req.body.users.push({userId: 'General', taskId: []})
     req.body.teamLeader = {
@@ -148,11 +157,24 @@ exports.updateGroup = async (req, res, next) => {
     //does the group exist
     let foundGroup = await group.findOne({ _id: req.params.groupId });
 
+    if (!foundGroup) {
+      const err = errorHandler.createOperationalError("Group does not exist in the database!", 500)
+      next(err)
+      return
+    }
+
     //if leaderId is filled, check if it's a valid user and fill the obj appropriately
     if (req.body.leaderId) {
       const foundLeader = await user.findOne({
         _id: req.body.leaderId
       });
+
+      //does that leader exist
+      if(!foundLeader) {
+        const err = errorHandler.createOperationalError("Leader does not exist!", 500)
+        next(err)
+        return
+      }
       newGroupInformation.teamLeader = {
         name: foundLeader.firstName + " " + foundLeader.lastName,
         leaderId: foundLeader._id
