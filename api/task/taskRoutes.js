@@ -19,6 +19,10 @@ router
   .post(
     passport.authenticate("jwt", { session: false }),
     taskController.createTaskInGroup
+  )
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    taskController.getUsersTasksInGroup
   );
 
 router

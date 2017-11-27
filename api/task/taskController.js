@@ -11,43 +11,46 @@ const mongoose = require("mongoose"),
 
 // ==================== Functions =================
 
-//very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
+//FIXME: very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
 //Either there's a solution in terms of the implementation of the api or the database model
-//FIXME: Test and maybe redo Logic
 exports.getUsersTask = async (req, res, next) => {
   try {
     //Check if the user exists
     let foundUser = await user.findOne({ _id: req.params.userId });
 
     //verify is not in db
-    if(!foundUser){
-      const err = errorHandler.createOperationalError("User does not exist in the database", 500)
-      next(err)
-      return
+    if (!foundUser) {
+      const err = errorHandler.createOperationalError(
+        "User does not exist in the database",
+        500
+      );
+      next(err);
+      return;
     }
 
-    if (!user.groups) {
+    if (!foundUser.groups) {
       //check if has groups at all
       const err = errorHandler.createOperationalError("User has no tasks");
       next(err);
+      return;
     }
     let groupIds = []; //pull all the ids
-    for (groups of user.groups) {
+    for (let groups of foundUser.groups) {
       groupIds.push(groups.groupId);
     }
-    usersGroups = await group.find({ _id: { $in: groupIds } }); //request for all groups
+    let usersGroups = await group.find({ _id: { $in: groupIds } }); //request for all groups
     let usersTasks = [];
 
     //for each task in each single user where this user is, push into the users tasks
-    for (group of groups) {
-      for (groupUser of group.user) {
-        if (groupUser.id === user.id) {
-          userTasks.push(groupUser.taskId);
+    for (let groupOfUser of usersGroups) {
+      for (let groupUser of groupOfUser.users) {
+        if (groupUser.userId === req.params.userId) {
+          usersTasks = usersTasks.concat(groupUser.taskId);
         }
       }
     }
     //find all the tasks and send
-    let allTasks = await task.find({ _id: { $in: userTasks } });
+    let allTasks = await task.find({ _id: { $in: usersTasks } });
     res.send(allTasks);
   } catch (err) {
     err.isOperational = true;
@@ -55,40 +58,48 @@ exports.getUsersTask = async (req, res, next) => {
   }
 };
 
-//TODO: TEST
+
 /**
  * Gets all the user's tasks in the specified group
- * 
+ *
  * @param {any} res params are groupId and userId
  * @param {any} req returns all tasks
  * @param {any} next errorHandler
  */
-exports.getUsersTasksInGroup = async (res, req, next) => {
+exports.getUsersTasksInGroup = async (req, res, next) => {
   try {
-    const foundGroup = await group.findOne({_id: req.params.groupId})
+    const foundGroup = await group.findOne({ _id: req.params.groupId });
 
     //verify if in db
-    if(!foundGroup){
-      const err = errorHandler.createOperationalError("Group does not exist in the database", 500)
-      next(err)
-      return
+    if (!foundGroup) {
+      const err = errorHandler.createOperationalError(
+        "Group does not exist in the database",
+        500
+      );
+      next(err);
+      return;
     }
 
+    //find user in the group
+    let userInGroup = foundGroup.users.filter(obj => {
+      return obj.userId === req.params.userId;
+    });
+    userInGroup = userInGroup[0];
 
-    const userInGroup = foundGroup.users.filter((obj) => { 
-      return obj.userId === req.params.userId
-    })
+    if (!userInGroup) {
+      const err = errorHandler.createOperationalError("User does not exist");
+      next(err);
+      return;
+    }
 
-    const allTasks = await task.find({_id: {$in: userInGroup.taskId}})
-    res.send(allTasks)
-
+    const allTasks = await task.find({ _id: { $in: userInGroup.taskId } });
+    res.send(allTasks);
   } catch (err) {
     err.isOperational = true;
     next(err);
   }
 };
 
-//TODO: Test
 /**
  * Creates a task inside the specified group
  *
@@ -102,16 +113,21 @@ exports.createTaskInGroup = async (req, res, next) => {
     //verify both the group and user are valid
     let foundGroup = await group.findOne({ _id: req.params.groupId });
 
-    if(!foundGroup){
-      const err = errorHandler.createOperationalError("Group does not exist in the database", 500)
-      next(err)
-      return
+    if (!foundGroup) {
+      const err = errorHandler.createOperationalError(
+        "Group does not exist in the database",
+        500
+      );
+      next(err);
+      return;
     }
 
     //verify that the user is in the group
     let userInGroup = foundGroup.users.filter(user => {
       return user.userId === req.params.userId;
     });
+
+    userInGroup = userInGroup[0];
 
     if (!userInGroup) {
       const err = errorHandler.createOperationalError(
@@ -121,7 +137,9 @@ exports.createTaskInGroup = async (req, res, next) => {
       return;
     }
 
-    req.body.group = req.params.groupId; //is this necessary
+    //set ownership
+    req.body.group = req.params.groupId;
+    req.body.user = req.params.userId;
 
     //create task and save it to the database
     let newTask = new task(req.body);
@@ -168,22 +186,27 @@ exports.updateTask = async (req, res, next) => {
  */
 exports.deleteTask = async (req, res, next) => {
   try {
-
     //verify if task exists
     let foundTask = await task.findOne({ _id: req.params.taskId });
-    if(!foundTask){
-      const err = errorHandler.createOperationalError("Task does not exist in the database", 500)
-      next(err)
-      return
+    if (!foundTask) {
+      const err = errorHandler.createOperationalError(
+        "Task does not exist in the database",
+        500
+      );
+      next(err);
+      return;
     }
 
     //verify if group exists
     let foundGroup = await group.findOne({ _id: foundTask.group });
 
-    if(!foundGroup){
-      const err = errorHandler.createOperationalError("Group does not exist in the database", 500)
-      next(err)
-      return
+    if (!foundGroup) {
+      const err = errorHandler.createOperationalError(
+        "Group does not exist in the database",
+        500
+      );
+      next(err);
+      return;
     }
 
     //FIXME: Remove the task from the list of tasks of the user. Perhaps double loop?
