@@ -75,7 +75,7 @@ function fieldChecks(req, res, next) {
   });
 }
 
-//TODO: Verify email
+//TODO: Verify email is a valid email
 /**
  * Creates a user in the database
  *

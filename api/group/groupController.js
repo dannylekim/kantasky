@@ -28,7 +28,7 @@ exports.getGroup = async (req, res, next) => {
 };
 
 
-//TODO: Add a general user so that you can have non-associated tasks in the group. This would mean you need to change: updateGroup and createTaskInGroup as well
+
 /**
  * Creates a group and adds the group to the user Id
  *
@@ -50,11 +50,12 @@ exports.createGroup = async (req, res, next) => {
 
 
     req.body.users = [{ userId: req.params.userId, taskId: [] }]; 
-    if(req.body.category === 'group') req.body.users.push({userId: 'General', taskId: []})
+    if(req.body.category === 'group') req.body.users.push({userId: 'general', taskId: []})
     req.body.teamLeader = {
       leaderId: req.params.userId,
       name: foundUser.firstName + " " + foundUser.lastName
     };
+
     //save the group to the database
     let newGroup = new group(req.body);
     newGroup = await newGroup.save();

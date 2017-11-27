@@ -10,7 +10,7 @@ const groupSchema = new Schema({
   users: [
     {
       userId: String,
-      taskId: [],
+      taskId: [String],
       _id: false
     }
   ],
