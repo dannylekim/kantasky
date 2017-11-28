@@ -8,7 +8,7 @@ Proper Logging -- Winston
 Test all the api routes using API tests
 refactor all checks
 Instead of giving errors at 200, maybe at 500 for status? Also do an unhandled promise error handler
-
+Stashing tasks and users rather than deleting?
 
 Timer that tracks how long you're working on the task 
 Notifications/SMS/Email for invitations --> Socket based for notifications? (socket.io)
