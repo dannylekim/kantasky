@@ -75,7 +75,12 @@ function fieldChecks(req, res, next) {
   });
 }
 
-//TODO: Verify email is a valid email
+//TODO: Verify email is a valid email 
+//set a user attribute Active: false 
+//create a hash with a reference to the user Id
+//send an email to the supplied email address with a route
+//when they hit the email -> checks the hash for the userId, and then sets the account to active
+
 /**
  * Creates a user in the database
  *

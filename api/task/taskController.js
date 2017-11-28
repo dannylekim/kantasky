@@ -30,7 +30,7 @@ exports.getUsersTask = async (req, res, next) => {
 
     if (!foundUser.groups) {
       //check if has groups at all
-      const err = errorHandler.createOperationalError("User has no tasks");
+      const err = errorHandler.createOperationalError("User does not have any groups");
       next(err);
       return;
     }
@@ -58,7 +58,7 @@ exports.getUsersTask = async (req, res, next) => {
   }
 };
 
-
+//TODO: Make sure that the requester belongs to the group
 /**
  * Gets all the user's tasks in the specified group
  *
