@@ -14,8 +14,8 @@ const mongoose = require("mongoose"),
 //FIXME: very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
 /**
  * Get's all of the users tasks in every single group in an array. Requires token
- * 
- * @param {any} req needs userId 
+ *
+ * @param {any} req needs userId
  * @param {any} res returns array of objects
  * @param {any} next errorHandler
  */
@@ -193,20 +193,27 @@ exports.updateTask = async (req, res, next) => {
     //check if it's the correct and non empty task
     let foundTask = await task.findOne({ _id: req.params.taskId });
     if (!foundTask)
-      throw errorHandler.createOperationalError("The task does not exist.");
+      throw errorHandler.createOperationalError(
+        "The task does not exist.",
+        500
+      );
 
     //check if it's correct user
     if (req.body.user) {
       const foundUser = await user.findOne({ _id: req.body.user });
       if (!foundUser)
         throw errorHandler.createOperationalError(
-          "The new user does not exist."
+          "The new user does not exist.",
+          500
         );
 
       //check if it's the correct group
       const foundGroup = await group.findOne({ _id: foundTask.group });
       if (!foundGroup)
-        throw errorHandler.createOperationalError("The group does not exist.");
+        throw errorHandler.createOperationalError(
+          "The group does not exist.",
+          500
+        );
 
       //get the two users to swap ownership of the task
       let usersToChangeOwnerShip = foundGroup.users.filter(user => {
@@ -217,7 +224,10 @@ exports.updateTask = async (req, res, next) => {
         usersToChangeOwnerShip.length < 1 ||
         usersToChangeOwnerShip.length > 2
       )
-        throw errorHandler.createOperationalError("Users not found to update.");
+        throw errorHandler.createOperationalError(
+          "Users not found to update.",
+          500
+        );
 
       //swap. Is it better to just filter out what isn't the task vs splicing it out.
       if (usersToChangeOwnerShip.length === 2) {
@@ -226,13 +236,19 @@ exports.updateTask = async (req, res, next) => {
           const indexOfTask = usersToChangeOwnership[1].taskId.indexOf(
             foundTask.user
           );
-          usersToChangeOwnerShip[1].taskId.splice(indexOfTask, 1);
+          usersToChangeOwnerShip[1].taskId = usersToChangeOwnerShip[1].taskId.splice(
+            indexOfTask,
+            1
+          );
         } else {
           usersToChangeOwnerShip[1].taskId.push(req.params.taskId);
           const indexOfTask = usersToChangeOwnership[0].taskId.indexOf(
             foundTask.user
           );
-          usersToChangeOwnerShip[0].taskId.splice(indexOfTask, 1);
+          usersToChangeOwnerShip[0].taskId = usersToChangeOwnerShip[0].taskId.splice(
+            indexOfTask,
+            1
+          );
         }
         await usersToChangeOwnerShip[0].save();
         await usersToChangeOwnerShip[1].save();
@@ -249,7 +265,8 @@ exports.updateTask = async (req, res, next) => {
   }
 };
 
-//TODO: THE FIXME:
+
+//TODO:TEST
 /**
  * Deletes the task in the database and the task from the user in the group.
  *
@@ -266,8 +283,7 @@ exports.deleteTask = async (req, res, next) => {
         "Task does not exist in the database",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
 
     //verify if group exists
@@ -278,16 +294,29 @@ exports.deleteTask = async (req, res, next) => {
         "Group does not exist in the database",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
 
-    //FIXME: Remove the task from the list of tasks of the user. Perhaps double loop?
-    const newGroupUserArray = foundGroup.users.filter(obj => {
-      return obj.userId !== foundTask.user;
-    });
-    foundGroup.users = newGroupUserArray;
-    await foundGroup.save();
+    let isUserFound = false;
+    for (let user of foundGroup.users) {
+      if (user.userId === foundTask.user) {
+        const index = user.taskId.indexOf(req.params.taskId);
+        if (index <= -1)
+          throw errorHandler.createOperationalError(
+            "Task not found in group",
+            500
+          );
+        user.taskId = user.taskId.splice(index, 1);
+        isUserFound = true;
+        break;
+      }
+    }
+    if (isUserFound) await foundGroup.save();
+    else
+      throw errorHandler.createOperationalError(
+        "User was not found in group",
+        500
+      );
 
     //remove the task
     await foundTask.remove();

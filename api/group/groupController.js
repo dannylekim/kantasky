@@ -85,65 +85,45 @@ exports.createGroup = async (req, res, next) => {
   }
 };
 
-//TODO:
-exports.deleteGroup = function findGroup(req, res) {
-  group.find({ _id: req.params.groupId }, function pullUsersAndTasks(
-    err,
-    foundGroup
-  ) {
-    if (err) {
-      error.isOperational = true;
-      next(err);
-    } else {
-      var users = [];
-      var tasks = [];
-      for (user of foundGroup.users) {
-        users.push(user.userId);
-        tasks.push(user.taskId);
-      }
-      user.find({ _id: { $in: users } }, function removeGroupFromEachUser(
-        err,
-        foundUsers
-      ) {
-        for (groupUser in foundUsers) {
-          for (let index = 0; i < groupUser.groups.length; i++) {
-            if (req.params.id === groupUser.groups[index].groupId) {
-              groupUser.groups.splice(i, 1);
-              groupUser.save(function updatedUsers(err, updatedGroupUser) {
-                if (err) {
-                  error.isOperational = true;
-                  next(err);
-                  return;
-                }
-              });
-              break;
-            }
-          }
-        }
-      });
-      task.remove({ _id: { $in: tasks } }, function errorHandle(err, tasks) {
-        if (err) {
-          error.isOperational = true;
-          next(err);
-          return;
-        }
-      });
-      group.remove({ _id: req.params.groupId }, function sendResponse(
-        err,
-        removedGroup
-      ) {
-        if (err) {
-          error.isOperational = true;
-          next(err);
-        } else {
-          res.json({ message: "Group has successfully been removed" });
-        }
-      });
+//TODO: TEST also FIXME: THIS IS SUCH A HEAVY FUNCTION
+exports.deleteGroup = async (req, res) => {
+  try {
+    const foundGroup = await group.find({ _id: req.params.groupId });
+    if (!foundGroup)
+      throw errorHandler.createOperationalError(
+        "Group doesn't exist in database",
+        500
+      );
+
+    let usersList = [];
+    let tasksList = [];
+    for (let groupUser of foundGroup.users) {
+      usersList.push(groupUser.userId);
+      tasksList.push(groupUser.taskId);
     }
-  });
+
+    const foundUsers = await user.find({ _id: { $in: usersList } });
+    if (foundUsers.length !== usersList.length)
+      throw errorHandler("Error in how many users in group vs database");
+    for (let groupUser in foundUsers) {
+      for (let index = 0; i < groupUser.groups.length; i++) {
+        if (req.params.id === groupUser.groups[index].groupId) {
+          groupUser.groups = groupUser.groups.splice(i, 1);
+          await groupUser.save();
+          break;
+        }
+      }
+    }
+    await task.remove({ _id: { $in: tasks } });
+    await group.remove({ _id: req.params.groupId });
+    res.json({ message: "Group has successfully been removed" });
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
+  }
 };
 
-//TODO:
+//TODO: TEST
 /**
  * Updates the group. The fields edited are teamLeader, Users and the group name. Changing team Leader and Users requires that
  * the group is category group and that the requester is a team leader.
@@ -159,9 +139,31 @@ exports.updateGroup = async (req, res, next) => {
   //updating variables
   let newGroupInformation = {};
   if (req.body.name) newGroupInformation.name = req.body.name;
-  if (req.body.users) newGroupInformation.users = req.body.users; //TODO: Check all users to be valid and tasks and that General is present
+  if (req.body.users) newGroupInformation.users = req.body.users;
+
+  //accumulate all the user Ids
+  let reqUsers = [];
+  for (let reqUser in req.body.users) {
+    reqUsers.push(reqUser.userId);
+  }
+
+  //check if general is there, if no throw error
+  const generalIndex = reqUsers.indexOf("General");
+  if (generalIndex > -1) reqUsers = reqUsers.splice(generalIndex, 1);
+  else
+    throw errorHandler.createOperationalError(
+      "You can not remove General from list of users in a group",
+      401
+    );
 
   try {
+    const reqUsersList = await user.find({ _id: { $in: reqUsers } });
+    //check if all users are in the db
+    if (reqUsersList.length !== req.body.users.length)
+      throw errorHandler.createOperationalError(
+        "Error in list of users: Not all users exist"
+      );
+
     //does the group exist
     let foundGroup = await group.findOne({ _id: req.params.groupId });
 
@@ -172,6 +174,21 @@ exports.updateGroup = async (req, res, next) => {
       );
       throw err;
     }
+
+    //accumulate
+    let dbUserList = [];
+    for (let dbUser in foundGroup.users) {
+      dbUserList.push(dbUser.userId);
+    }
+
+    //check if req.body.users is a subset of the groups users
+    const isSubSet = reqUsers.every(function(val) {
+      return dbUserList.indexOf(val) >= 0;
+    });
+    if (!isSubset)
+      throw errorHandler.createOperationalError(
+        "List of users do not all belong in the group!"
+      );
 
     //if leaderId is filled, check if it's a valid user and fill the obj appropriately
     if (req.body.leaderId) {
