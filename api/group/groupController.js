@@ -26,8 +26,7 @@ exports.getGroup = async (req, res, next) => {
         "Group does not exist in the database",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
     res.json(foundGroup);
   } catch (err) {
@@ -54,8 +53,7 @@ exports.createGroup = async (req, res, next) => {
         "User does not exist in the database!",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
 
     req.body.users = [{ userId: req.params.userId, taskId: [] }];
@@ -145,6 +143,7 @@ exports.deleteGroup = function findGroup(req, res) {
   });
 };
 
+//TODO:
 /**
  * Updates the group. The fields edited are teamLeader, Users and the group name. Changing team Leader and Users requires that
  * the group is category group and that the requester is a team leader.
@@ -171,8 +170,7 @@ exports.updateGroup = async (req, res, next) => {
         "Group does not exist in the database!",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
 
     //if leaderId is filled, check if it's a valid user and fill the obj appropriately
@@ -187,8 +185,7 @@ exports.updateGroup = async (req, res, next) => {
           "Leader does not exist!",
           500
         );
-        next(err);
-        return;
+        throw err;
       }
       newGroupInformation.teamLeader = {
         name: foundLeader.firstName + " " + foundLeader.lastName,
@@ -201,8 +198,7 @@ exports.updateGroup = async (req, res, next) => {
       const err = errorHandler.createOperationalError(
         "You need to change at least one thing!"
       );
-      next(err);
-      return;
+      throw err;
     }
 
     //If it isn't the team leader who's updated, reject request
@@ -210,8 +206,7 @@ exports.updateGroup = async (req, res, next) => {
       const err = errorHandler.createOperationalError(
         "Only the Team Leader can update the group!"
       );
-      next(err);
-      return;
+      throw err;
     }
 
     //if the group is personal, you should not be allowed to update users or the team leader.
