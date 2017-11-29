@@ -177,7 +177,7 @@ exports.createTaskInGroup = async (req, res, next) => {
   }
 };
 
-//TODO: Test
+//TODO: Test --> only requester can update his own tasks, admin can do whatever he wants, he can even edit general 
 /**
  * Updates the task.
  *
