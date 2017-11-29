@@ -85,7 +85,7 @@ exports.createGroup = async (req, res, next) => {
   }
 };
 
-//TODO: TEST also FIXME: THIS IS SUCH A HEAVY FUNCTION
+//TODO: TEST also FIXME: THIS IS SUCH A HEAVY FUNCTION, --> only teamleader can delete the group/admin
 exports.deleteGroup = async (req, res) => {
   try {
     const foundGroup = await group.find({ _id: req.params.groupId });
@@ -240,6 +240,10 @@ exports.updateGroup = async (req, res, next) => {
     (err.isOperational = true), next(err);
   }
 };
+
+exports.leaveGroup = async (req, res, next) => {
+  
+}
 
 //============= Admin Functions =================
 /**
