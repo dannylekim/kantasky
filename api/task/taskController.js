@@ -12,7 +12,13 @@ const mongoose = require("mongoose"),
 // ==================== Functions =================
 
 //FIXME: very heavy function. Rethink this when you can because it is a triple database call with a triple nested for loop
-//Either there's a solution in terms of the implementation of the api or the database model
+/**
+ * Get's all of the users tasks in every single group in an array. Requires token
+ * 
+ * @param {any} req needs userId 
+ * @param {any} res returns array of objects
+ * @param {any} next errorHandler
+ */
 exports.getUsersTask = async (req, res, next) => {
   try {
     //Check if the user exists
@@ -24,15 +30,15 @@ exports.getUsersTask = async (req, res, next) => {
         "User does not exist in the database",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
 
     if (!foundUser.groups) {
       //check if has groups at all
-      const err = errorHandler.createOperationalError("User does not have any groups");
-      next(err);
-      return;
+      const err = errorHandler.createOperationalError(
+        "User does not have any groups"
+      );
+      throw err;
     }
     let groupIds = []; //pull all the ids
     for (let groups of foundUser.groups) {
@@ -58,7 +64,6 @@ exports.getUsersTask = async (req, res, next) => {
   }
 };
 
-//TODO: Make sure that the requester belongs to the group
 /**
  * Gets all the user's tasks in the specified group
  *
@@ -69,6 +74,9 @@ exports.getUsersTask = async (req, res, next) => {
 exports.getUsersTasksInGroup = async (req, res, next) => {
   try {
     const foundGroup = await group.findOne({ _id: req.params.groupId });
+    const requesterId = await auth.getIdFromToken(
+      req.get("authorization").replace("Bearer ", "")
+    );
 
     //verify if in db
     if (!foundGroup) {
@@ -76,20 +84,35 @@ exports.getUsersTasksInGroup = async (req, res, next) => {
         "Group does not exist in the database",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
 
-    //find user in the group
+    //find requester in the group
     let userInGroup = foundGroup.users.filter(obj => {
-      return obj.userId === req.params.userId;
+      return obj.userId === requesterId;
     });
+
     userInGroup = userInGroup[0];
 
     if (!userInGroup) {
-      const err = errorHandler.createOperationalError("User does not exist");
-      next(err);
-      return;
+      const err = errorHandler.createOperationalError(
+        "Requester does not exist within the group"
+      );
+      throw err;
+    }
+
+    //find user in the group --> it's kinda like duplicate code. Find a way to merge above
+    userInGroup = foundGroup.users.filter(obj => {
+      return obj.userId === req.params.userId;
+    });
+
+    userInGroup = userInGroup[0];
+
+    if (!userInGroup) {
+      const err = errorHandler.createOperationalError(
+        "User does not exist within the group"
+      );
+      throw err;
     }
 
     const allTasks = await task.find({ _id: { $in: userInGroup.taskId } });
@@ -118,8 +141,7 @@ exports.createTaskInGroup = async (req, res, next) => {
         "Group does not exist in the database",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
 
     //verify that the user is in the group
@@ -133,8 +155,7 @@ exports.createTaskInGroup = async (req, res, next) => {
       const err = errorHandler.createOperationalError(
         "There is no such user in this group!"
       );
-      next(err);
-      return;
+      throw err;
     }
 
     //set ownership
@@ -156,7 +177,7 @@ exports.createTaskInGroup = async (req, res, next) => {
   }
 };
 
-//TODO: Test and when you change the task ownership change it inside the group as well. Also do not allow groups to be changed.
+//TODO: Test
 /**
  * Updates the task.
  *
@@ -166,6 +187,58 @@ exports.createTaskInGroup = async (req, res, next) => {
  */
 exports.updateTask = async (req, res, next) => {
   try {
+    //groups can not be changed so undefined it if it's there
+    req.body.group = undefined;
+
+    //check if it's the correct and non empty task
+    let foundTask = await task.findOne({ _id: req.params.taskId });
+    if (!foundTask)
+      throw errorHandler.createOperationalError("The task does not exist.");
+
+    //check if it's correct user
+    if (req.body.user) {
+      const foundUser = await user.findOne({ _id: req.body.user });
+      if (!foundUser)
+        throw errorHandler.createOperationalError(
+          "The new user does not exist."
+        );
+
+      //check if it's the correct group
+      const foundGroup = await group.findOne({ _id: foundTask.group });
+      if (!foundGroup)
+        throw errorHandler.createOperationalError("The group does not exist.");
+
+      //get the two users to swap ownership of the task
+      let usersToChangeOwnerShip = foundGroup.users.filter(user => {
+        return user.userId === req.body.user || user.userId === foundTask.user;
+      });
+
+      if (
+        usersToChangeOwnerShip.length < 1 ||
+        usersToChangeOwnerShip.length > 2
+      )
+        throw errorHandler.createOperationalError("Users not found to update.");
+
+      //swap. Is it better to just filter out what isn't the task vs splicing it out.
+      if (usersToChangeOwnerShip.length === 2) {
+        if (usersToChangeOwnerShip[0].userId === req.body.user) {
+          usersToChangeOwnerShip[0].taskId.push(req.params.taskId);
+          const indexOfTask = usersToChangeOwnership[1].taskId.indexOf(
+            foundTask.user
+          );
+          usersToChangeOwnerShip[1].taskId.splice(indexOfTask, 1);
+        } else {
+          usersToChangeOwnerShip[1].taskId.push(req.params.taskId);
+          const indexOfTask = usersToChangeOwnership[0].taskId.indexOf(
+            foundTask.user
+          );
+          usersToChangeOwnerShip[0].taskId.splice(indexOfTask, 1);
+        }
+        await usersToChangeOwnerShip[0].save();
+        await usersToChangeOwnerShip[1].save();
+      }
+    }
+
     await task.findOneAndUpdate({ _id: req.params.taskId }, req.body, {
       new: true
     });

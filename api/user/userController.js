@@ -75,8 +75,8 @@ function fieldChecks(req, res, next) {
   });
 }
 
-//TODO: Verify email is a valid email 
-//set a user attribute Active: false 
+//TODO: Verify email is a valid email
+//set a user attribute Active: false
 //create a hash with a reference to the user Id
 //send an email to the supplied email address with a route
 //when they hit the email -> checks the hash for the userId, and then sets the account to active
@@ -95,19 +95,17 @@ exports.createUser = async (req, res, next) => {
 
     //Finding user checks. If username or email already exists in the db, then reject
     if (foundUser) {
-      const error = errorHandler.createOperationalError(
+      const err = errorHandler.createOperationalError(
         "A user with this username already exists, please choose another one."
       );
-      next(error);
-      return;
+      throw err;
     }
     foundUser = await user.findOne({ email: req.body.email });
     if (foundUser) {
-      const error = errorHandler.createOperationalError(
+      const err = errorHandler.createOperationalError(
         "This email is already in use!"
       );
-      next(error);
-      return;
+      throw err;
     }
 
     //hash the password, save it into the database and then return the user without password or role
@@ -161,14 +159,15 @@ exports.updateAccountInformation = async (req, res, next) => {
   if (req.body.lastName) updatedUser.lastName = req.body.lastName;
   if (req.body.email) updatedUser.email = req.body.email;
 
-  //if all empty fields, reject
-  if (!(updatedUser.firstName || updatedUser.lastName || updatedUser.email)) {
-    const err = errorHandler.createOperationalError(
-      "You need to change at least one thing!"
-    );
-    next(err);
-  }
   try {
+    //if all empty fields, reject
+    if (!(updatedUser.firstName || updatedUser.lastName || updatedUser.email)) {
+      const err = errorHandler.createOperationalError(
+        "You need to change at least one thing!"
+      );
+      throw err;
+    }
+
     let foundUser = await user.findOne({ _id: req.params.userId });
 
     //verify user is in db
@@ -177,8 +176,7 @@ exports.updateAccountInformation = async (req, res, next) => {
         "User is not found in the database",
         500
       );
-      next(err);
-      return;
+      throw err;
     }
     foundUser.set(updatedUser); //update the user
     foundUser = await foundUser.save();
@@ -199,11 +197,8 @@ exports.updateAccountInformation = async (req, res, next) => {
 exports.changePassword = async (req, res, next) => {
   //check for empty
   if (!req.body.password) {
-    const error = errorHandler.createOperationalError(
-      "Please input a password"
-    );
-    next(error);
-    return;
+    const err = errorHandler.createOperationalError("Please input a password");
+    throw err;
   }
   try {
     //check to see if properly valid and secure
@@ -211,10 +206,12 @@ exports.changePassword = async (req, res, next) => {
     let foundUser = await user.findOne({ _id: req.params.userId });
 
     //verify if in db
-    if(!foundUser){
-      const err = errorHandler.createOperationalError("Use does not exist in the database", 500)
-      next(err)
-      return
+    if (!foundUser) {
+      const err = errorHandler.createOperationalError(
+        "Use does not exist in the database",
+        500
+      );
+      throw err;
     }
 
     //check if old password
@@ -223,11 +220,10 @@ exports.changePassword = async (req, res, next) => {
       foundUser.password
     );
     if (isOldPassword) {
-      const error = errorHandler.createOperationalError(
+      const err = errorHandler.createOperationalError(
         "Please input a new password"
       );
-      next(error);
-      return;
+      throw err;
     }
 
     //set the new password
