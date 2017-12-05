@@ -85,7 +85,7 @@ exports.createGroup = async (req, res, next) => {
   }
 };
 
-//TODO: TEST also FIXME: THIS IS SUCH A HEAVY FUNCTION, --> only teamleader can delete the group/admin
+//TODO: TEST also FIXME: THIS IS SUCH A HEAVY FUNCTION
 exports.deleteGroup = async (req, res) => {
   try {
     const foundGroup = await group.find({ _id: req.params.groupId });
@@ -95,6 +95,11 @@ exports.deleteGroup = async (req, res) => {
         500
       );
 
+    const token = req.get("authorization").replace("Bearer ", "")
+    const requesterId = auth.getIdFromToken(token)
+
+    if(token !== foundGroup.teamLeader) await auth.isAdmin(token)
+    
     let usersList = [];
     let tasksList = [];
     for (let groupUser of foundGroup.users) {
