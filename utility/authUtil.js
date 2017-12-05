@@ -12,8 +12,9 @@ const userModel = require("mongoose").model("User"),
  */
 exports.verifyPassword = async userData => {
   try {
-    const user = await userModel.findOne({ username: userData.username }); //database call for finding user
-    if (!user) {
+    let user = await userModel.findOne({ username: userData.username }); //database call for finding user
+    if(!user) user = await userModel.findOne({email: userData.username}) //another db call to see check the email
+    if (!user) {  
       let err = errorHandler.createOperationalError(
         "User has not been found",
         401

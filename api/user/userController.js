@@ -12,7 +12,6 @@ const mongoose = require("mongoose"),
 
 // ================ Functions ==================
 
-//TODO: Login by Email?
 /**
  * Tries to authenticate and verify the user with the credentials given
  *
@@ -122,28 +121,6 @@ exports.createUser = async (req, res, next) => {
   }
 };
 
-//TODO: Need to implement this to delete all tasks and groups
-exports.deleteUser = function checkAdmin(req, res) {
-  auth.isAdmin(req.get("authorization"), function removeUser(err, isAdmin) {
-    if (err) {
-      err.isOperational = true;
-      next(err);
-    } else {
-      user.remove(
-        {
-          _id: req.params.userId
-        },
-        function sendResponse(err, task) {
-          if (err) {
-            err.isOperational = true;
-            next(err);
-          }
-          res.json({ message: "User successfully removed" });
-        }
-      );
-    }
-  });
-};
 
 /**
  * Updates a users first name, last name and email
@@ -253,4 +230,18 @@ exports.getAllUsers = async (req, res, next) => {
     err.isOperational = true;
     next(err);
   }
+};
+
+//TODO: Need to implement this to delete all tasks and groups
+exports.deleteUser = async (req, res) => {
+  try{
+    await auth.isAdmin(req.get("authorization"))
+    
+  }
+  catch(err){
+    err.isOperational = true
+    next(err)
+  }
+ 
+
 };
