@@ -236,7 +236,7 @@ exports.getAllUsers = async (req, res, next) => {
 exports.deleteUser = async (req, res) => {
   try{
     await auth.isAdmin(req.get("authorization"))
-    
+
   }
   catch(err){
     err.isOperational = true
