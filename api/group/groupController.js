@@ -46,7 +46,6 @@ exports.createGroup = async (req, res, next) => {
   try {
     //initialize body and all necessary values
     let foundUser = await user.findOne({ _id: req.params.userId });
-    99.784;
     //if user doesn't exist, return
     if (!foundUser) {
       const err = errorHandler.createOperationalError(
@@ -85,41 +84,44 @@ exports.createGroup = async (req, res, next) => {
   }
 };
 
-//TODO: TEST also FIXME: THIS IS SUCH A HEAVY FUNCTION
-exports.deleteGroup = async (req, res) => {
+//FIXME: THIS IS SUCH A HEAVY FUNCTION
+exports.deleteGroup = async (req, res, next) => {
   try {
-    const foundGroup = await group.find({ _id: req.params.groupId });
+    const foundGroup = await group.findOne({ _id: req.params.groupId });
     if (!foundGroup)
       throw errorHandler.createOperationalError(
         "Group doesn't exist in database",
         500
       );
 
-    const token = req.get("authorization").replace("Bearer ", "")
-    const requesterId = auth.getIdFromToken(token)
+    const token = req.get("authorization").replace("Bearer ", "");
+    const requesterId = auth.getIdFromToken(token);
 
-    if(token !== foundGroup.teamLeader) await auth.isAdmin(token)
-    
+    if (requesterId !== foundGroup.teamLeader.leaderId) await auth.isAdmin(token);
+
     let usersList = [];
     let tasksList = [];
     for (let groupUser of foundGroup.users) {
-      usersList.push(groupUser.userId);
-      tasksList.push(groupUser.taskId);
+      if(groupUser.userId !== "general"){
+        usersList.push(groupUser.userId);
+        tasksList.push(groupUser.taskId);
+      }
+     
     }
 
     const foundUsers = await user.find({ _id: { $in: usersList } });
     if (foundUsers.length !== usersList.length)
       throw errorHandler("Error in how many users in group vs database");
-    for (let groupUser in foundUsers) {
-      for (let index = 0; i < groupUser.groups.length; i++) {
-        if (req.params.id === groupUser.groups[index].groupId) {
-          groupUser.groups = groupUser.groups.splice(i, 1);
+    for (let groupUser of foundUsers) {
+      for (let index = 0; index < groupUser.groups.length; index++) {
+        if (req.params.groupId === groupUser.groups[index].groupId) {
+          groupUser.groups = groupUser.groups.splice(index, 1);
           await groupUser.save();
           break;
         }
       }
     }
-    await task.remove({ _id: { $in: tasks } });
+    await task.remove({ _id: { $in: tasksList } });
     await group.remove({ _id: req.params.groupId });
     res.json({ message: "Group has successfully been removed" });
   } catch (err) {
@@ -128,7 +130,7 @@ exports.deleteGroup = async (req, res) => {
   }
 };
 
-//TODO: TEST
+//TODO: TEST -- SEEMS TO WORK 
 /**
  * Updates the group. The fields edited are teamLeader, Users and the group name. Changing team Leader and Users requires that
  * the group is category group and that the requester is a team leader.
@@ -144,30 +146,33 @@ exports.updateGroup = async (req, res, next) => {
   //updating variables
   let newGroupInformation = {};
   if (req.body.name) newGroupInformation.name = req.body.name;
-  if (req.body.users) newGroupInformation.users = req.body.users;
-
-  //accumulate all the user Ids
-  let reqUsers = [];
-  for (let reqUser in req.body.users) {
-    reqUsers.push(reqUser.userId);
-  }
-
-  //check if general is there, if no throw error
-  const generalIndex = reqUsers.indexOf("General");
-  if (generalIndex > -1) reqUsers = reqUsers.splice(generalIndex, 1);
-  else
-    throw errorHandler.createOperationalError(
-      "You can not remove General from list of users in a group",
-      401
-    );
+  req.body.category = undefined // can't change category of a group
 
   try {
-    const reqUsersList = await user.find({ _id: { $in: reqUsers } });
-    //check if all users are in the db
-    if (reqUsersList.length !== req.body.users.length)
-      throw errorHandler.createOperationalError(
-        "Error in list of users: Not all users exist"
-      );
+    if (req.body.users) {
+      newGroupInformation.users = req.body.users;
+      //accumulate all the user Ids
+      let reqUsers = [];
+      for (let reqUser in req.body.users) {
+        reqUsers.push(reqUser.userId);
+      }
+
+      //check if general is there, if no throw error
+      const generalIndex = reqUsers.indexOf("General");
+      if (generalIndex > -1) reqUsers = reqUsers.splice(generalIndex, 1);
+      else
+        throw errorHandler.createOperationalError(
+          "You can not remove General from list of users in a group",
+          401
+        );
+
+      const reqUsersList = await user.find({ _id: { $in: reqUsers } });
+      //check if all users are in the db
+      if (reqUsersList.length !== req.body.users.length)
+        throw errorHandler.createOperationalError(
+          "Error in list of users: Not all users exist"
+        );
+    }
 
     //does the group exist
     let foundGroup = await group.findOne({ _id: req.params.groupId });
@@ -187,13 +192,16 @@ exports.updateGroup = async (req, res, next) => {
     }
 
     //check if req.body.users is a subset of the groups users
-    const isSubSet = reqUsers.every(function(val) {
-      return dbUserList.indexOf(val) >= 0;
-    });
-    if (!isSubset)
-      throw errorHandler.createOperationalError(
-        "List of users do not all belong in the group!"
-      );
+
+    if (req.body.users) {
+      const isSubSet = reqUsers.every(function(val) {
+        return dbUserList.indexOf(val) >= 0;
+      });
+      if (!isSubset)
+        throw errorHandler.createOperationalError(
+          "List of users do not all belong in the group!"
+        );
+    }
 
     //if leaderId is filled, check if it's a valid user and fill the obj appropriately
     if (req.body.leaderId) {
@@ -237,6 +245,8 @@ exports.updateGroup = async (req, res, next) => {
       newGroupInformation.users = foundGroup.users;
     }
 
+  
+
     //set and save
     foundGroup.set(newGroupInformation);
     foundGroup = await foundGroup.save();
@@ -246,9 +256,7 @@ exports.updateGroup = async (req, res, next) => {
   }
 };
 
-exports.leaveGroup = async (req, res, next) => {
-  
-}
+exports.leaveGroup = async (req, res, next) => {};
 
 //============= Admin Functions =================
 /**
