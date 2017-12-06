@@ -3,14 +3,13 @@
 
 
 ## Things to do next
-Refactoring using awaits/promises while documenting
 Proper Logging -- Winston 
+Finish API Documentation
+Do Developer Documentation
 Test all the api routes using API tests
 refactor all checks
-Instead of giving errors at 200, maybe at 500 for status? Also do an unhandled promise error handler
+
 Creating Admin Only Paths rather than making the checks within the methods. 
-
-
 Timer that tracks how long you're working on the task 
 Notifications/SMS/Email for invitations --> Socket based for notifications? (socket.io)
 passport FB and google

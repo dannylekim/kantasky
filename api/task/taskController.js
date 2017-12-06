@@ -177,7 +177,7 @@ exports.createTaskInGroup = async (req, res, next) => {
   }
 };
 
-//TODO: Test --> only requester can update his own tasks, admin can do whatever he wants, he can even edit general 
+//TODO: Test 
 /**
  * Updates the task.
  *
@@ -190,6 +190,10 @@ exports.updateTask = async (req, res, next) => {
     //groups can not be changed so undefined it if it's there
     req.body.group = undefined;
 
+    const reqId = auth.getIdFromToken(
+      req.get("authorization").replace("Bearer ", "")
+    );
+
     //check if it's the correct and non empty task
     let foundTask = await task.findOne({ _id: req.params.taskId });
     if (!foundTask)
@@ -197,6 +201,13 @@ exports.updateTask = async (req, res, next) => {
         "The task does not exist.",
         500
       );
+
+    if (foundTask.user !== reqId) {
+      throw errorHandler.createOperationalError(
+        "Only the task's user can update his own tasks.",
+        401
+      );
+    }
 
     //check if it's correct user
     if (req.body.user) {
@@ -264,7 +275,6 @@ exports.updateTask = async (req, res, next) => {
     next(err);
   }
 };
-
 
 //TODO:TEST
 /**

@@ -232,10 +232,13 @@ exports.getAllUsers = async (req, res, next) => {
   }
 };
 
-//TODO: Need to implement this to delete all tasks and groups
+//TODO: Need to implement this to delete all tasks and groups...Actually do we need to really have this done
 exports.deleteUser = async (req, res) => {
   try{
     await auth.isAdmin(req.get("authorization"))
+
+
+
 
   }
   catch(err){
