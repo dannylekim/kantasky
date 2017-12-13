@@ -1,5 +1,4 @@
 const handleError = function handleError(err, req, res, next) {
-
   if (!err.isOperational) {
     //log
     res.send(err.message);
@@ -15,7 +14,7 @@ const handleUncaughtException = function handleUncaughtException(err) {
     console.log(err);
     process.exit(1);
   }
- 
+
   throw err;
 };
 
@@ -23,7 +22,7 @@ const createOperationalError = function createError(message, status) {
   var error = new Error(message);
   error.isOperational = true;
   error.status = status;
-  return error
+  return error;
 };
 
 exports.createOperationalError = createOperationalError;

@@ -8,6 +8,7 @@ const mongoose = require("mongoose"),
   errorHandler = require("../../utility/errorUtil"),
   bcrypt = require("bcrypt"),
   config = require("../../config/config"),
+
   jwt = require("jsonwebtoken");
 
 // ================ Functions ==================
@@ -21,6 +22,7 @@ const mongoose = require("mongoose"),
  */
 exports.authenticate = async (req, res, next) => {
   try {
+    
     const isNotEmpty = await fieldChecks(req, res, next); //checks if the fields are empty or not
     if (isNotEmpty) {
       const user = await auth.verifyPassword(req.body); //verifies the hash and returns the user
