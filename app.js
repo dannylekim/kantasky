@@ -23,13 +23,15 @@ const express = require("express"),
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
-app.use(cors());
+app.use(cors()); 
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/", router);
 
 
+//=============== Centralized Logging Handler =============
 
+app.use()
 
 //============ Centralized Error Handler ===================
 

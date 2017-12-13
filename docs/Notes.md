@@ -1,12 +1,13 @@
 # Issues
 
-
-
 ## Things to do next
 Proper Logging -- Winston 
+Test all the api routes using API tests
+
+
 Finish API Documentation
 Do Developer Documentation
-Test all the api routes using API tests
+
 refactor all checks
 
 Creating Admin Only Paths rather than making the checks within the methods. 
