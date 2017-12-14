@@ -8,7 +8,6 @@ const mongoose = require("mongoose"),
   errorHandler = require("../../utility/errorUtil"),
   bcrypt = require("bcrypt"),
   config = require("../../config/config"),
-
   jwt = require("jsonwebtoken");
 
 // ================ Functions ==================
@@ -22,8 +21,16 @@ const mongoose = require("mongoose"),
  */
 exports.authenticate = async (req, res, next) => {
   try {
-    
     const isNotEmpty = await fieldChecks(req, res, next); //checks if the fields are empty or not
+    req.log = {
+      level: "warn",
+      message: "test",
+      object: {
+        sup: 'bitch',
+        hi: 'yo'
+      }
+    };
+    next();
     if (isNotEmpty) {
       const user = await auth.verifyPassword(req.body); //verifies the hash and returns the user
       const token = createJsonToken(user); //returns a token that gives the id and role
@@ -122,7 +129,6 @@ exports.createUser = async (req, res, next) => {
     next(err);
   }
 };
-
 
 /**
  * Updates a users first name, last name and email
@@ -236,17 +242,10 @@ exports.getAllUsers = async (req, res, next) => {
 
 //TODO: Need to implement this to delete all tasks and groups...Actually do we need to really have this done
 exports.deleteUser = async (req, res) => {
-  try{
-    await auth.isAdmin(req.get("authorization"))
-
-
-
-
+  try {
+    await auth.isAdmin(req.get("authorization"));
+  } catch (err) {
+    err.isOperational = true;
+    next(err);
   }
-  catch(err){
-    err.isOperational = true
-    next(err)
-  }
- 
-
 };
