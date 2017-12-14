@@ -16,29 +16,29 @@ const express = require("express"),
   auth = require("./utility/authUtil"),
   errorHandler = require("./utility/errorUtil"),
   cors = require("cors"),
-  bcrypt = require("bcrypt");
+  bcrypt = require("bcrypt"),
+  logger = require("./utility/logUtil");
 
 //============= Express Application Configuration ==========
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan("dev"));
-app.use(cors()); 
+app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/", router);
 
-
 //=============== Centralized Logging Handler =============
 
-app.use()
+app.use(logger.loggerHandler);
 
 //============ Centralized Error Handler ===================
 
-app.use(errorHandler.handleError)
+app.use(errorHandler.handleError);
 process.on("uncaughtException", function(err) {
-    errorHandler.handleUncaughtException(err)
-})
+  errorHandler.handleUncaughtException(err);
+});
 
 //============ Strategy Configuration ==================
 var jwtOptions = {};

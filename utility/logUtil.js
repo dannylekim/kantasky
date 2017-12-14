@@ -1,12 +1,16 @@
 "use strict";
 const { createLogger, format, transports } = require("winston");
-const { combine, timestamp, colorize, prettyPrint } = format;
+const { combine, timestamp, prettyPrint, label, printf } = format;
 const fs = require("fs");
+
+const myFormat = printf(info => {
+  return `${info.timestamp} [${info.label}] ${info.level}: ${info.message} ${info.meta}`;
+});
 
 //Set to have a timestamp, pretty print and colorized (for console).
 const logger = createLogger({
-  format: combine(timestamp(), prettyPrint(), colorize()),
-  transports: [new winston.transports.Console()]
+  format: combine(label({ label: "right meow!" }), timestamp(), prettyPrint()),
+  transports: [new transports.Console()]
 });
 
 let currentDate;
@@ -22,40 +26,43 @@ const setLoggerFileDestination = next => {
     createFolderHierarchyByDate(dateObj.month, dateObj.year, next);
     currentDate = dateObj.todayString;
     const combinedLogName =
-      "../logs/" +
+      "./logs/" +
       dateObj.year +
       "/" +
       dateObj.month +
       "/" +
-      todayString +
+      dateObj.todayString +
       "_daily.log";
 
     const errorLogName =
-      "../logs/" +
+      "./logs/" +
       dateObj.year +
       "/" +
       dateObj.month +
       "/" +
-      todayString +
+      dateObj.todayString +
       "_errors.log";
 
-    const combinedLogTransport = new winston.transports.File({
+    const combinedLogTransport = new transports.File({
+      name: "dailyLog",
       filename: combinedLogName,
-      level: "warning" //logs everything warning and below to combinedLogName
+      level: "warn" //logs everything warning and below to combinedLogName
     });
 
-    const errorLogTransport = new winston.transports.File({
+    const errorLogTransport = new transports.File({
+      name: "errorLog",
       filename: errorLogName,
       level: "error" //logs everything error and below to errorLogName
     });
 
-    const consoleTransport = new winston.transports.Console()
+    const consoleTransport = new transports.Console();
 
     //should these be globals
-    logger.clear()
-    .add(combinedLogTransport)
-    .add(errorLogTransport)
-    .add(consoleTransport)
+    logger
+      .remove("dailyLog")
+      .remove("errorLog")
+      .add(combinedLogTransport)
+      .add(errorLogTransport);
   }
 };
 
@@ -67,14 +74,9 @@ const setLoggerFileDestination = next => {
  * @param {any} next
  */
 const createFolderHierarchyByDate = (month, year, next) => {
-  try {
-    fs.mkdir("../logs/" + year);
-    fs.mkdir("../logs/" + year + "/" + month);
-  } catch (err) {
-    if (err.code !== "EEXIST") {
-      next(err);
-    }
-  }
+  if (!fs.existsSync("./logs/" + year)) fs.mkdirSync("./logs/" + year);
+  if (!fs.existsSync("./logs/" + year + "/" + month))
+    fs.mkdirSync("./logs/" + year + "/" + month);
 };
 
 /**
@@ -96,7 +98,7 @@ const getTodaysDate = () => {
     month = "0" + month;
   }
 
-  const todayString = year + month + day;
+  const todayString = year + "" + "" + month + "" + day;
   const dateDataObj = {
     todayString: todayString,
     year: year,
@@ -107,8 +109,14 @@ const getTodaysDate = () => {
   return dateDataObj;
 };
 
+exports.loggerHandler = (req, res, next) => {
+  setLoggerFileDestination(next);
+  const level = req.log.level;
+  const message = req.log.message;
+  const object = req.log.object;
+  logger.log({ level: level, message: message, meta: object });
+  req.log = undefined;
 
-const loggerHandler = (object, message, level, next) => {
-  logger.log(level, message, object)
-  next(object)
-}
+  if (level === "error") next(object);
+  return;
+};
