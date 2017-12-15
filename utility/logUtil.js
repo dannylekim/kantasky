@@ -1,15 +1,21 @@
 "use strict";
 const { createLogger, format, transports } = require("winston");
-const { combine, timestamp, prettyPrint, label, printf } = format;
-const fs = require("fs");
+const { combine, printf } = format;
+const fs = require("fs"),
+  moment = require("moment");
 
+//set up my format to be as such Date | LEVEL | METHOD url | [label]: message | err.stack
 const myFormat = printf(info => {
-  return `${info.timestamp} [${info.label}] ${info.level}: ${info.message} ${info.meta}`;
+  return (
+    `${info.timestamp} | ` +
+    info.level.toUpperCase() +
+    ` | [${info.label}] : ${info.message} | ${info.err}`
+  );
 });
 
 //Set to have a timestamp, pretty print and colorized (for console).
 const logger = createLogger({
-  format: combine(label({ label: "right meow!" }), timestamp(), prettyPrint()),
+  format: myFormat,
   transports: [new transports.Console()]
 });
 
@@ -18,13 +24,15 @@ let currentDate;
 /**
  * Gets the current date, and creates a folder corresponding to the date. Then sets the transports of the logger to the appropriate filename.
  *
- * @param {any} next
+ * @param {any}
  */
-const setLoggerFileDestination = next => {
+const setLoggerFileDestination = () => {
   const dateObj = getTodaysDate();
   if (currentDate !== dateObj.todayString) {
-    createFolderHierarchyByDate(dateObj.month, dateObj.year, next);
+    createFolderHierarchyByDate(dateObj.month, dateObj.year);
     currentDate = dateObj.todayString;
+
+    //create the log names and then create the transports using those names
     const combinedLogName =
       "./logs/" +
       dateObj.year +
@@ -57,7 +65,7 @@ const setLoggerFileDestination = next => {
 
     const consoleTransport = new transports.Console();
 
-    //should these be globals
+    //remove and add them to the logger
     logger
       .remove("dailyLog")
       .remove("errorLog")
@@ -73,7 +81,8 @@ const setLoggerFileDestination = next => {
  * @param {any} year
  * @param {any} next
  */
-const createFolderHierarchyByDate = (month, year, next) => {
+const createFolderHierarchyByDate = (month, year) => {
+  //check if exists, if not create dir
   if (!fs.existsSync("./logs/" + year)) fs.mkdirSync("./logs/" + year);
   if (!fs.existsSync("./logs/" + year + "/" + month))
     fs.mkdirSync("./logs/" + year + "/" + month);
@@ -109,14 +118,39 @@ const getTodaysDate = () => {
   return dateDataObj;
 };
 
-exports.loggerHandler = (req, res, next) => {
+/**
+ * Middleware to just configure the file destinations and set the logger up
+ *
+ * @param {any} req
+ * @param {any} res
+ * @param {any} next
+ */
+exports.loggerMiddleware = (req, res, next) => {
   setLoggerFileDestination(next);
-  const level = req.log.level;
-  const message = req.log.message;
-  const object = req.log.object;
-  logger.log({ level: level, message: message, meta: object });
-  req.log = undefined;
+  next();
+};
 
-  if (level === "error") next(object);
-  return;
+/**
+ * Create a log inside the .log file that's corresponding to the level. Everything goes into daily, error goes into error logs as well.
+ *
+ * @param {any} level the level in lower case of the log. Could be: info, warn, err, debug, silly
+ * @param {any} label The label: generally put either the req.method + " " + req.url OR the method name if not a request.
+ * @param {any} message the message that you'd like to place.
+ * @param {any} err the error obj. You could also just not fill it out.
+ */
+exports.log = (level, label, message, err) => {
+  const time = moment().format("MMMM Do YYYY, h:mm:ss a");
+
+  //create the log object
+  let logObj = {
+    level: level,
+    message: message,
+    label: label,
+    timestamp: time,
+  };
+
+  if(!err || err === "") logObj.err = err
+  else logObj.err = err.stack
+
+  logger.log(logObj);
 };

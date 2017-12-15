@@ -8,7 +8,8 @@ const mongoose = require("mongoose"),
   errorHandler = require("../../utility/errorUtil"),
   bcrypt = require("bcrypt"),
   config = require("../../config/config"),
-  jwt = require("jsonwebtoken");
+  jwt = require("jsonwebtoken"),
+  logger = require("../../utility/logUtil");
 
 // ================ Functions ==================
 
@@ -21,16 +22,10 @@ const mongoose = require("mongoose"),
  */
 exports.authenticate = async (req, res, next) => {
   try {
+
+    logger.log('info', req.method + " " + req.url, '============= Started Login =============', "")
+
     const isNotEmpty = await fieldChecks(req, res, next); //checks if the fields are empty or not
-    req.log = {
-      level: "warn",
-      message: "test",
-      object: {
-        sup: 'bitch',
-        hi: 'yo'
-      }
-    };
-    next();
     if (isNotEmpty) {
       const user = await auth.verifyPassword(req.body); //verifies the hash and returns the user
       const token = createJsonToken(user); //returns a token that gives the id and role
