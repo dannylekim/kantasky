@@ -27,11 +27,10 @@ app.use(morgan("dev"));
 app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(logger.loggerMiddleware)
 app.use("/", router);
 
-//=============== Centralized Logging Handler =============
 
-app.use(logger.loggerHandler);
 
 //============ Centralized Error Handler ===================
 
