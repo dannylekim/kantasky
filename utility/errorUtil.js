@@ -1,20 +1,31 @@
+'use strict'
+
+const logger = require("./logUtil");
+
 const handleError = function handleError(err, req, res, next) {
   if (!err.isOperational) {
-    //log
+    logger.log('error', req.method + " " + res.url, '', err)
     res.send(err.message);
     process.exit(1);
   }
-  if (err.status) res.status(err.status).send(err.message);
-  else res.send(err.message);
+  if (err.status) {
+    logger.log('warn', req.method + " " + res.url, err.status, err)
+    res.status(err.status).send(err.message)
+  }
+  else {
+    logger.log('warn', req.method + " " + res.url, '', err)
+    res.send(err.message);
+  }
 };
 
 const handleUncaughtException = function handleUncaughtException(err) {
   if (!err.isOperational) {
-    //log
+    logger.log('error', "UNCAUGHT EXCEPTION", "Non-Operational Error", err)
     console.log(err);
     process.exit(1);
   }
 
+  logger.log('warn', "UNCAUGHT EXCEPTION", "Operational Error", err)
   throw err;
 };
 

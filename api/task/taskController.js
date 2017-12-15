@@ -7,7 +7,8 @@ const mongoose = require("mongoose"),
   group = mongoose.model("Group"),
   user = mongoose.model("User"),
   auth = require("../../utility/authUtil"),
-  errorHandler = require("../../utility/errorUtil");
+  errorHandler = require("../../utility/errorUtil"),
+  logger = require("../../utility/logUtil");
 
 // ==================== Functions =================
 
@@ -20,6 +21,12 @@ const mongoose = require("mongoose"),
  * @param {any} next errorHandler
  */
 exports.getUsersTask = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Starting Get User's Tasks =============",
+    ""
+  );
   try {
     //Check if the user exists
     let foundUser = await user.findOne({ _id: req.params.userId });
@@ -40,6 +47,13 @@ exports.getUsersTask = async (req, res, next) => {
       );
       throw err;
     }
+
+    logger.log(
+      "info",
+      "group.find()",
+      "Create array of group Ids and push in to database call",
+      ""
+    );
     let groupIds = []; //pull all the ids
     for (let groups of foundUser.groups) {
       groupIds.push(groups.groupId);
@@ -47,6 +61,12 @@ exports.getUsersTask = async (req, res, next) => {
     let usersGroups = await group.find({ _id: { $in: groupIds } }); //request for all groups
     let usersTasks = [];
 
+    logger.log(
+      "info",
+      "task.find()",
+      "Going through each and every single one of users groups and concat to one array to find tasks",
+      ""
+    );
     //for each task in each single user where this user is, push into the users tasks
     for (let groupOfUser of usersGroups) {
       for (let groupUser of groupOfUser.users) {
@@ -55,11 +75,18 @@ exports.getUsersTask = async (req, res, next) => {
         }
       }
     }
+
     //find all the tasks and send
     let allTasks = await task.find({ _id: { $in: usersTasks } });
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Finished Get User's Tasks =============",
+      ""
+    );
     res.send(allTasks);
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
@@ -72,6 +99,13 @@ exports.getUsersTask = async (req, res, next) => {
  * @param {any} next errorHandler
  */
 exports.getUsersTasksInGroup = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Starting Get User's in Tasks Groups =============",
+    ""
+  );
+
   try {
     const foundGroup = await group.findOne({ _id: req.params.groupId });
     const requesterId = await auth.getIdFromToken(
@@ -106,6 +140,12 @@ exports.getUsersTasksInGroup = async (req, res, next) => {
       return obj.userId === req.params.userId;
     });
 
+    logger.log(
+      "info",
+      "task.find()",
+      "Finding Tasks from that User in the group",
+      ""
+    );
     userInGroup = userInGroup[0];
 
     if (!userInGroup) {
@@ -116,9 +156,15 @@ exports.getUsersTasksInGroup = async (req, res, next) => {
     }
 
     const allTasks = await task.find({ _id: { $in: userInGroup.taskId } });
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Finished Get User's in Tasks Groups =============",
+      ""
+    );
     res.send(allTasks);
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
@@ -132,6 +178,12 @@ exports.getUsersTasksInGroup = async (req, res, next) => {
  * @returns
  */
 exports.createTaskInGroup = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Starting Create Task In Group =============",
+    ""
+  );
   try {
     //verify both the group and user are valid
     let foundGroup = await group.findOne({ _id: req.params.groupId });
@@ -164,20 +216,27 @@ exports.createTaskInGroup = async (req, res, next) => {
 
     //create task and save it to the database
     let newTask = new task(req.body);
+
+    logger.log("info", "newTask.save()", "Saving into the database", "");
     newTask = await newTask.save();
 
     //add the task to the groupId specified
     userInGroup.taskId.push(newTask._id);
     foundGroup = await foundGroup.save();
 
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Created Task in Group =============",
+      ""
+    );
     res.send(foundGroup);
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
 
-//TODO: Test 
+//TODO: Test
 /**
  * Updates the task.
  *
@@ -186,6 +245,13 @@ exports.createTaskInGroup = async (req, res, next) => {
  * @param {any} next
  */
 exports.updateTask = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Update Task =============",
+    ""
+  );
+
   try {
     //groups can not be changed so undefined it if it's there
     req.body.group = undefined;
@@ -242,6 +308,7 @@ exports.updateTask = async (req, res, next) => {
 
       //swap. Is it better to just filter out what isn't the task vs splicing it out.
       if (usersToChangeOwnerShip.length === 2) {
+        logger.log("info", "Swap", "Swapping Ownershp", "");
         if (usersToChangeOwnerShip[0].userId === req.body.user) {
           usersToChangeOwnerShip[0].taskId.push(req.params.taskId);
           const indexOfTask = usersToChangeOwnership[1].taskId.indexOf(
@@ -266,12 +333,19 @@ exports.updateTask = async (req, res, next) => {
       }
     }
 
+    logger.log("info", "task.findOneAndUpdate()", "Update the task", "");
     await task.findOneAndUpdate({ _id: req.params.taskId }, req.body, {
       new: true
     });
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Update Task =============",
+      ""
+    );
     res.json({ message: "Task has successfully been updated" });
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
@@ -285,6 +359,12 @@ exports.updateTask = async (req, res, next) => {
  * @param {any} next
  */
 exports.deleteTask = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Delete Task =============s",
+    ""
+  );
   try {
     //verify if task exists
     let foundTask = await task.findOne({ _id: req.params.taskId });
@@ -307,6 +387,12 @@ exports.deleteTask = async (req, res, next) => {
       throw err;
     }
 
+    logger.log(
+      "info",
+      "Bulk Edit all groups and users",
+      "Check all groups with user inside for that one task and remove it all.",
+      ""
+    );
     let isUserFound = false;
     for (let user of foundGroup.users) {
       if (user.userId === foundTask.user) {
@@ -329,10 +415,19 @@ exports.deleteTask = async (req, res, next) => {
       );
 
     //remove the task
+
+    logger.log("info", "foundTask.remove()", "Removing Tasks", "");
     await foundTask.remove();
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Delete Task =============",
+      ""
+    );
     res.json({ message: "Task has successfully been removed" });
   } catch (err) {
-    (err.isOperational = true), next(err);
+    next(err);
   }
 };
 
@@ -345,12 +440,25 @@ exports.deleteTask = async (req, res, next) => {
  * @param {any} next Error Handler
  */
 exports.getAllTasks = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Get All Tasks =============",
+    ""
+  );
   try {
     await auth.isAdmin(req.get("authorization"));
     const foundTask = await task.find({});
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Get All Tasks =============",
+      ""
+    );
     res.json(foundTask);
   } catch (err) {
-    err.isOperational = true;
+
     next(err);
   }
 };
