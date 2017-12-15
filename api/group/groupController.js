@@ -7,7 +7,8 @@ const mongoose = require("mongoose"),
   group = mongoose.model("Group"),
   user = mongoose.model("User"),
   auth = require("../../utility/authUtil"),
-  errorHandler = require("../../utility/errorUtil");
+  errorHandler = require("../../utility/errorUtil"),
+  logger = require("../../utility/logUtil");
 
 // ============== Functions ===================
 /**
@@ -18,6 +19,12 @@ const mongoose = require("mongoose"),
  * @param {any} next errorHandler
  */
 exports.getGroup = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Get Group =============",
+    ""
+  );
   try {
     const foundGroup = await group.find({ _id: req.params.groupId });
 
@@ -28,6 +35,13 @@ exports.getGroup = async (req, res, next) => {
       );
       throw err;
     }
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Get Group =============",
+      ""
+    );
     res.json(foundGroup);
   } catch (err) {
     err.isOperational = true;
@@ -43,6 +57,13 @@ exports.getGroup = async (req, res, next) => {
  * @param {any} next error handler
  */
 exports.createGroup = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Create Group =============",
+    ""
+  );
+
   try {
     //initialize body and all necessary values
     let foundUser = await user.findOne({ _id: req.params.userId });
@@ -55,6 +76,12 @@ exports.createGroup = async (req, res, next) => {
       throw err;
     }
 
+    logger.log(
+      "info",
+      "Group Creation",
+      "Creating the group users and general user",
+      ""
+    );
     req.body.users = [{ userId: req.params.userId, taskId: [] }];
     if (req.body.category === "group")
       req.body.users.push({ userId: "general", taskId: [] });
@@ -63,10 +90,17 @@ exports.createGroup = async (req, res, next) => {
       name: foundUser.firstName + " " + foundUser.lastName
     };
 
+    logger.log("info", "newGroup.save()", "Saving Group into the Database", "");
     //save the group to the database
     let newGroup = new group(req.body);
     newGroup = await newGroup.save();
 
+    logger.log(
+      "info",
+      "foundUser.groups.push(), set(), save()",
+      "Pushing the group onto the user and saving",
+      ""
+    );
     //push the group to the user
     const groupObj = {
       category: req.body.category,
@@ -77,15 +111,28 @@ exports.createGroup = async (req, res, next) => {
     //set and save
     foundUser.set(updatedUser);
     foundUser = await foundUser.save();
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Create Group =============",
+      ""
+    );
     res.json(newGroup);
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
 
 //FIXME: THIS IS SUCH A HEAVY FUNCTION
 exports.deleteGroup = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Delete Group =============",
+    ""
+  );
+
   try {
     const foundGroup = await group.findOne({ _id: req.params.groupId });
     if (!foundGroup)
@@ -97,21 +144,40 @@ exports.deleteGroup = async (req, res, next) => {
     const token = req.get("authorization").replace("Bearer ", "");
     const requesterId = auth.getIdFromToken(token);
 
-    if (requesterId !== foundGroup.teamLeader.leaderId) await auth.isAdmin(token);
+    logger.log(
+      "info",
+      "Check if teamleader else auth.isAdmin()",
+      "Checking if requester is administrator or team leader",
+      ""
+    );
+    if (requesterId !== foundGroup.teamLeader.leaderId)
+      await auth.isAdmin(token);
 
+    logger.log(
+      "info",
+      "Looping, and user.find()",
+      "Get every single user and task",
+      ""
+    );
     let usersList = [];
     let tasksList = [];
     for (let groupUser of foundGroup.users) {
-      if(groupUser.userId !== "general"){
+      if (groupUser.userId !== "general") {
         usersList.push(groupUser.userId);
         tasksList.push(groupUser.taskId);
       }
-     
     }
 
     const foundUsers = await user.find({ _id: { $in: usersList } });
     if (foundUsers.length !== usersList.length)
       throw errorHandler("Error in how many users in group vs database");
+
+    logger.log(
+      "info",
+      ".splice() the group out of groupUser and save()",
+      "Splicing and Updating all the groups",
+      ""
+    );
     for (let groupUser of foundUsers) {
       for (let index = 0; index < groupUser.groups.length; index++) {
         if (req.params.groupId === groupUser.groups[index].groupId) {
@@ -121,16 +187,24 @@ exports.deleteGroup = async (req, res, next) => {
         }
       }
     }
+
+    logger.log("info", "task.remove()", "Remove all Tasks", "");
     await task.remove({ _id: { $in: tasksList } });
     await group.remove({ _id: req.params.groupId });
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Deleted Group =============",
+      ""
+    );
     res.json({ message: "Group has successfully been removed" });
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
 
-//TODO: TEST -- SEEMS TO WORK 
+//TODO: TEST -- SEEMS TO WORK
 /**
  * Updates the group. The fields edited are teamLeader, Users and the group name. Changing team Leader and Users requires that
  * the group is category group and that the requester is a team leader.
@@ -141,23 +215,39 @@ exports.deleteGroup = async (req, res, next) => {
  * @returns
  */
 exports.updateGroup = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Update Group =============",
+    ""
+  );
+
   const token = req.get("authorization").replace("Bearer ", "");
   const tokenId = auth.getIdFromToken(token);
   //updating variables
   let newGroupInformation = {};
   if (req.body.name) newGroupInformation.name = req.body.name;
-  req.body.category = undefined // can't change category of a group
+  req.body.category = undefined; // can't change category of a group
 
   try {
     if (req.body.users) {
       newGroupInformation.users = req.body.users;
       //accumulate all the user Ids
+
+      logger.log("info", "get reqUser.userId", "Get all user IDs", "");
       let reqUsers = [];
       for (let reqUser in req.body.users) {
         reqUsers.push(reqUser.userId);
       }
 
       //check if general is there, if no throw error
+
+      logger.log(
+        "info",
+        "General User Check",
+        "Check if general user is still present",
+        ""
+      );
       const generalIndex = reqUsers.indexOf("General");
       if (generalIndex > -1) reqUsers = reqUsers.splice(generalIndex, 1);
       else
@@ -168,6 +258,13 @@ exports.updateGroup = async (req, res, next) => {
 
       const reqUsersList = await user.find({ _id: { $in: reqUsers } });
       //check if all users are in the db
+
+      logger.log(
+        "info",
+        "Check for Users in DB",
+        "Check that all users are in the db",
+        ""
+      );
       if (reqUsersList.length !== req.body.users.length)
         throw errorHandler.createOperationalError(
           "Error in list of users: Not all users exist"
@@ -186,6 +283,13 @@ exports.updateGroup = async (req, res, next) => {
     }
 
     //accumulate
+
+    logger.log(
+      "info",
+      "push()",
+      "Accumulate all users inside the group in the db",
+      ""
+    );
     let dbUserList = [];
     for (let dbUser in foundGroup.users) {
       dbUserList.push(dbUser.userId);
@@ -193,6 +297,12 @@ exports.updateGroup = async (req, res, next) => {
 
     //check if req.body.users is a subset of the groups users
 
+    logger.log(
+      "info",
+      "every => indexOf() for subset",
+      "Verify that all users in the request belong to the subset of Group's Users",
+      ""
+    );
     if (req.body.users) {
       const isSubSet = reqUsers.every(function(val) {
         return dbUserList.indexOf(val) >= 0;
@@ -204,7 +314,14 @@ exports.updateGroup = async (req, res, next) => {
     }
 
     //if leaderId is filled, check if it's a valid user and fill the obj appropriately
+
     if (req.body.leaderId) {
+      logger.log(
+        "info",
+        "findOne(), setNewObj",
+        "Verify if updated TeamLeader is an existing teamLeader",
+        ""
+      );
       const foundLeader = await user.findOne({
         _id: req.body.leaderId
       });
@@ -245,17 +362,25 @@ exports.updateGroup = async (req, res, next) => {
       newGroupInformation.users = foundGroup.users;
     }
 
-  
-
     //set and save
+
+    logger.log("info", "Saving/Update the group", "Updating the group", "");
     foundGroup.set(newGroupInformation);
     foundGroup = await foundGroup.save();
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Update Group =============",
+      ""
+    );
     res.json({ message: "Successfully updated the group!" });
   } catch (err) {
-    (err.isOperational = true), next(err);
+    next(err);
   }
 };
 
+//TODO: Assign new team leader, remove groups from this user and move all user's tasks to general user. If last user, delete group.
 exports.leaveGroup = async (req, res, next) => {};
 
 //============= Admin Functions =================
@@ -266,12 +391,24 @@ exports.leaveGroup = async (req, res, next) => {};
  * @param {any} res
  */
 exports.getAllGroups = async (req, res) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Get All Groups =============",
+    ""
+  );
   try {
     await auth.isAdmin(req.get("authorization"));
     const foundGroups = await group.find({});
+
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully Finished Get All Groups =============",
+      ""
+    );
     res.send(foundGroups);
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };

@@ -21,18 +21,35 @@ const mongoose = require("mongoose"),
  * @param {any} next moves on to the next handler
  */
 exports.authenticate = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Login =============",
+    ""
+  );
   try {
-
-    logger.log('info', req.method + " " + req.url, '============= Started Login =============', "")
-
+    logger.log("info", "fieldChecks()", "Checking if fields are empty", "");
     const isNotEmpty = await fieldChecks(req, res, next); //checks if the fields are empty or not
+
     if (isNotEmpty) {
+      logger.log(
+        "info",
+        "auth.verifyPassword",
+        "Verify if the password is correct",
+        ""
+      );
       const user = await auth.verifyPassword(req.body); //verifies the hash and returns the user
       const token = createJsonToken(user); //returns a token that gives the id and role
+
+      logger.log(
+        "info",
+        req.method + " " + req.url,
+        "============= Successful Login =============",
+        ""
+      );
       res.json({ message: "Login Successful", token: token });
     }
   } catch (err) {
-    err.isOperational = true;
     next(err); //sends to next handler
   }
 };
@@ -92,7 +109,19 @@ function fieldChecks(req, res, next) {
  * @param {any} next error handler
  */
 exports.createUser = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Started Create User =============",
+    ""
+  );
   try {
+    logger.log(
+      "info",
+      "auth.isPasswordValid()",
+      "Checking if the password fulfills the requirements",
+      ""
+    );
     await auth.isPasswordValid(req.body.password);
     let foundUser = (await user.find({ username: req.body.username }))[0];
 
@@ -112,15 +141,22 @@ exports.createUser = async (req, res, next) => {
     }
 
     //hash the password, save it into the database and then return the user without password or role
+    logger.log("info", "bcrypt.hash()", "Hashing the password", "");
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     req.body.password = hashedPassword;
     const newUser = new user(req.body);
+    logger.log("info", "newUser.save()", "Creating User...", "");
     foundUser = await newUser.save();
     foundUser.password = undefined;
     foundUser.role = undefined;
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Created User =============",
+      ""
+    );
     res.json(foundUser);
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
@@ -133,6 +169,12 @@ exports.createUser = async (req, res, next) => {
  * @param {any} next
  */
 exports.updateAccountInformation = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Start Update Account Information =============",
+    ""
+  );
   //place new values into an object
   let updatedUser = {};
   if (req.body.firstName) updatedUser.firstName = req.body.firstName;
@@ -158,11 +200,20 @@ exports.updateAccountInformation = async (req, res, next) => {
       );
       throw err;
     }
+
+    logger.log("info", "foundUser.set()", "Setting new information", "");
     foundUser.set(updatedUser); //update the user
+
+    logger.log("info", "foundUser.save()", "Updating the user", "");
     foundUser = await foundUser.save();
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully updated the Account =============",
+      ""
+    );
     res.json({ message: "Successfully updated the user's information." });
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
@@ -175,6 +226,13 @@ exports.updateAccountInformation = async (req, res, next) => {
  * @param {any} next error Handler
  */
 exports.changePassword = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Starting Change Password =============",
+    ""
+  );
+
   //check for empty
   if (!req.body.password) {
     const err = errorHandler.createOperationalError("Please input a password");
@@ -182,6 +240,14 @@ exports.changePassword = async (req, res, next) => {
   }
   try {
     //check to see if properly valid and secure
+
+    logger.log(
+      "info",
+      "auth.isPasswordValid()",
+      "Checks the password if it fulfills the requirements",
+      ""
+    );
+
     await auth.isPasswordValid(req.body.password);
     let foundUser = await user.findOne({ _id: req.params.userId });
 
@@ -207,12 +273,20 @@ exports.changePassword = async (req, res, next) => {
     }
 
     //set the new password
+    logger.log("info", "bcrypt.hash()", "Hashing the password", "");
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    logger.log("info", "foundUser.set()", "Setting the password", "");
     foundUser.set({ password: hashedPassword });
+    logger.log("info", "foundUser.save()", "Updating the user", "");
     await foundUser.save();
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully changed password =============",
+      ""
+    );
     res.json({ message: "Password has successfully been changed" });
   } catch (err) {
-    err.isOperational = true;
     next(error);
   }
 };
@@ -225,12 +299,29 @@ exports.changePassword = async (req, res, next) => {
  * @param {any} res Returns all users
  */
 exports.getAllUsers = async (req, res, next) => {
+  logger.log(
+    "info",
+    req.method + " " + req.url,
+    "============= Starting Get All Users =============",
+    ""
+  );
   try {
+    logger.log(
+      "info",
+      "auth.isAdmin()",
+      "Check if requester is administrator",
+      ""
+    );
     await auth.isAdmin(req.get("authorization"));
     const foundUser = await user.find({});
+    logger.log(
+      "info",
+      req.method + " " + req.url,
+      "============= Successfully got all users =============",
+      ""
+    );
     res.json(foundUser);
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };
