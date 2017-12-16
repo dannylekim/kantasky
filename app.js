@@ -40,11 +40,11 @@ process.on("uncaughtException", function(err) {
 });
 
 //============ Strategy Configuration ==================
-var jwtOptions = {};
+let jwtOptions = {};
 jwtOptions.jwtFromRequest = extractJWT.fromAuthHeaderAsBearerToken();
 jwtOptions.secretOrKey = config.secret;
 
-var strategy = new jwtStrategy(jwtOptions, function(jwtPayload, callback) {
+let strategy = new jwtStrategy(jwtOptions, function(jwtPayload, callback) {
   auth.getUser(jwtPayload.id, (err, user) => {
     if (user) {
       callback(null, user);
