@@ -23,7 +23,7 @@ const mongoose = require("mongoose"),
 exports.getUsersTask = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Starting Get User's Tasks =============",
     ""
   );
@@ -81,7 +81,7 @@ exports.getUsersTask = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Finished Get User's Tasks =============",
       ""
     );
@@ -101,7 +101,7 @@ exports.getUsersTask = async (req, res, next) => {
 exports.getUsersTasksInGroup = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Starting Get User's in Tasks Groups =============",
     ""
   );
@@ -159,7 +159,7 @@ exports.getUsersTasksInGroup = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Finished Get User's in Tasks Groups =============",
       ""
     );
@@ -180,7 +180,7 @@ exports.getUsersTasksInGroup = async (req, res, next) => {
 exports.createTaskInGroup = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Starting Create Task In Group =============",
     ""
   );
@@ -226,7 +226,7 @@ exports.createTaskInGroup = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Created Task in Group =============",
       ""
     );
@@ -247,7 +247,7 @@ exports.createTaskInGroup = async (req, res, next) => {
 exports.updateTask = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Update Task =============",
     ""
   );
@@ -340,7 +340,7 @@ exports.updateTask = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Update Task =============",
       ""
     );
@@ -361,7 +361,7 @@ exports.updateTask = async (req, res, next) => {
 exports.deleteTask = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Delete Task =============s",
     ""
   );
@@ -421,7 +421,7 @@ exports.deleteTask = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Delete Task =============",
       ""
     );
@@ -442,7 +442,7 @@ exports.deleteTask = async (req, res, next) => {
 exports.getAllTasks = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Get All Tasks =============",
     ""
   );
@@ -452,7 +452,7 @@ exports.getAllTasks = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Get All Tasks =============",
       ""
     );
