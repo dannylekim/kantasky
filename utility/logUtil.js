@@ -7,9 +7,9 @@ const fs = require("fs"),
 //set up my format to be as such Date | LEVEL | METHOD url | [label]: message | err.stack
 const myFormat = printf(info => {
   return (
-    `${info.timestamp} | ` +
+    `[${info.timestamp}] | ` +
     info.level.toUpperCase() +
-    ` | [${info.label}] : ${info.message} | ${info.err}`
+    ` | ${info.label} : ${info.message} ${info.err}`
   );
 });
 
@@ -54,7 +54,7 @@ const setLoggerFileDestination = () => {
     const combinedLogTransport = new transports.File({
       name: "dailyLog",
       filename: combinedLogName,
-      level: "warn" //logs everything warning and below to combinedLogName
+      level: "info" //logs everything warning and below to combinedLogName
     });
 
     const errorLogTransport = new transports.File({
@@ -83,6 +83,7 @@ const setLoggerFileDestination = () => {
  */
 const createFolderHierarchyByDate = (month, year) => {
   //check if exists, if not create dir
+  if (!fs.existsSync("./logs")) fs.mkdir("./logs");
   if (!fs.existsSync("./logs/" + year)) fs.mkdirSync("./logs/" + year);
   if (!fs.existsSync("./logs/" + year + "/" + month))
     fs.mkdirSync("./logs/" + year + "/" + month);
@@ -146,11 +147,11 @@ exports.log = (level, label, message, err) => {
     level: level,
     message: message,
     label: label,
-    timestamp: time,
+    timestamp: time
   };
 
-  if(!err || err === "") logObj.err = err
-  else logObj.err = err.stack
+  if (!err || err === "") logObj.err = "";
+  else logObj.err = err.stack;
 
   logger.log(logObj);
 };
