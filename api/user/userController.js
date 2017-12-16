@@ -23,7 +23,7 @@ const mongoose = require("mongoose"),
 exports.authenticate = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Login =============",
     ""
   );
@@ -43,7 +43,7 @@ exports.authenticate = async (req, res, next) => {
 
       logger.log(
         "info",
-        req.method + " " + req.url,
+        req.method + " " + req.baseUrl + req.url,
         "============= Successful Login =============",
         ""
       );
@@ -111,7 +111,7 @@ function fieldChecks(req, res, next) {
 exports.createUser = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Create User =============",
     ""
   );
@@ -151,7 +151,7 @@ exports.createUser = async (req, res, next) => {
     foundUser.role = undefined;
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Created User =============",
       ""
     );
@@ -171,7 +171,7 @@ exports.createUser = async (req, res, next) => {
 exports.updateAccountInformation = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Start Update Account Information =============",
     ""
   );
@@ -208,7 +208,7 @@ exports.updateAccountInformation = async (req, res, next) => {
     foundUser = await foundUser.save();
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully updated the Account =============",
       ""
     );
@@ -228,7 +228,7 @@ exports.updateAccountInformation = async (req, res, next) => {
 exports.changePassword = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Starting Change Password =============",
     ""
   );
@@ -281,7 +281,7 @@ exports.changePassword = async (req, res, next) => {
     await foundUser.save();
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully changed password =============",
       ""
     );
@@ -301,7 +301,7 @@ exports.changePassword = async (req, res, next) => {
 exports.getAllUsers = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Starting Get All Users =============",
     ""
   );
@@ -316,7 +316,7 @@ exports.getAllUsers = async (req, res, next) => {
     const foundUser = await user.find({});
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully got all users =============",
       ""
     );

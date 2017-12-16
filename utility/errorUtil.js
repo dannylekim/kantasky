@@ -14,7 +14,7 @@ const logger = require("./logUtil");
 exports.handleError = (err, req, res, next) => {
   
   let errorObj = {
-    label: req.method + " " + res.url,
+    label: req.method + " " + req.baseUrl + res.url,
     message: "",
     err: err,
     level: "warn"

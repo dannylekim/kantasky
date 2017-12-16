@@ -21,7 +21,7 @@ const mongoose = require("mongoose"),
 exports.getGroup = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Get Group =============",
     ""
   );
@@ -38,7 +38,7 @@ exports.getGroup = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Get Group =============",
       ""
     );
@@ -59,7 +59,7 @@ exports.getGroup = async (req, res, next) => {
 exports.createGroup = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Create Group =============",
     ""
   );
@@ -114,7 +114,7 @@ exports.createGroup = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Create Group =============",
       ""
     );
@@ -128,7 +128,7 @@ exports.createGroup = async (req, res, next) => {
 exports.deleteGroup = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Delete Group =============",
     ""
   );
@@ -194,7 +194,7 @@ exports.deleteGroup = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Deleted Group =============",
       ""
     );
@@ -217,7 +217,7 @@ exports.deleteGroup = async (req, res, next) => {
 exports.updateGroup = async (req, res, next) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Update Group =============",
     ""
   );
@@ -370,7 +370,7 @@ exports.updateGroup = async (req, res, next) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Update Group =============",
       ""
     );
@@ -381,7 +381,11 @@ exports.updateGroup = async (req, res, next) => {
 };
 
 //TODO: Assign new team leader, remove groups from this user and move all user's tasks to general user. If last user, delete group.
-exports.leaveGroup = async (req, res, next) => {};
+exports.leaveGroup = async (req, res, next) => {
+
+
+
+};
 
 //============= Admin Functions =================
 /**
@@ -393,7 +397,7 @@ exports.leaveGroup = async (req, res, next) => {};
 exports.getAllGroups = async (req, res) => {
   logger.log(
     "info",
-    req.method + " " + req.url,
+    req.method + " " + req.baseUrl + req.url,
     "============= Started Get All Groups =============",
     ""
   );
@@ -403,7 +407,7 @@ exports.getAllGroups = async (req, res) => {
 
     logger.log(
       "info",
-      req.method + " " + req.url,
+      req.method + " " + req.baseUrl + req.url,
       "============= Successfully Finished Get All Groups =============",
       ""
     );
