@@ -31,7 +31,7 @@ exports.verifyPassword = async userData => {
 };
 
 //================= Used for local passport strategy =============
-exports.getUser = function findUserById(userId, callback) {
+exports.getUser = (userId, callback) => {
   userModel.findById(userId, (err, user) => {
     if (err) {
       err.isOperational = true;
@@ -70,7 +70,7 @@ exports.isAdmin = (token) => {
  * @param {any} password the password
  * @returns returns control back to the caller
  */
-exports.isPasswordValid = function checkValidity(password) {
+exports.isPasswordValid = (password) => {
   return new Promise((resolve, reject) => {
     if (password > 160)
       return reject(
@@ -108,6 +108,6 @@ exports.isPasswordValid = function checkValidity(password) {
 
 //================ Decode =========================
 
-exports.getIdFromToken = function decodeToken(token) {
+exports.getIdFromToken = (token) => {
   return jwt.decode(token).id;
 };

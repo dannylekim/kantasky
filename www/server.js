@@ -1,7 +1,7 @@
 const app = require("../app"),
   mongoose = require("mongoose"),
-  config = require("../config/config");
-MongoClient = require("mongodb").MongoClient;
+  config = require("../config/config"),
+  MongoClient = require("mongodb").MongoClient;
 
 //======== Database Configuration =======================
 mongoose.Promise = global.Promise;
@@ -13,4 +13,4 @@ mongoose.connect(config.database, {
 
 const port = process.env.PORT || 4000;
 app.listen(port);
-console.log("Team Organizer Server started on port: " + port);
+console.log("Kantasky Server started on port: " + port);
