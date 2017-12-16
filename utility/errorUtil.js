@@ -12,28 +12,28 @@ const logger = require("./logUtil");
  * @param {any} next Next
  */
 exports.handleError = (err, req, res, next) => {
-  if (!err.isOperational) {
-    logger.log(
-      "error",
-      "NON-OPERATIONAL ERROR AT: " + req.method + " " + res.url,
-      "",
-      err
-    );
-    res.send(err.message);
-  }
+  
+  let errorObj = {
+    label: req.method + " " + res.url,
+    message: "",
+    err: err,
+    level: "warn"
+  };
+  if (!err.isOperational) errorObj.level = "error";
+
   if (err.status) {
-    logger.log("warn", req.method + " " + res.url, err.status, err);
-    res.status(err.status).send(err.message);
-  } else {  
-    logger.log("warn", req.method + " " + res.url, "", err);
-    res.send(err.message);
+    errorObj.message = err.status;
+    res.status(err.status);
   }
+
+  logger.log(errorObj);
+  res.send(err.message);
 };
 
 /**
  *  Unhandled exception. If non operational, exit
  *
- * @param {any} err error 
+ * @param {any} err error   wd
  */
 exports.handleUncaughtException = err => {
   if (!err.isOperational) {
