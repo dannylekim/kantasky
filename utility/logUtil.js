@@ -1,15 +1,30 @@
+/* 
+Levels goes as follows for logging: 
+
+Error: 0 
+Warn: 1 
+info: 2
+verbose: 3
+debug: 4
+silly: 5
+
+It's up to the programmer to write logs at the appropriate level. Level 5 is the most verbose. Log levels should be read from a config file. 
+
+
+*/
+
+
 "use strict";
 const { createLogger, format, transports } = require("winston");
 const { combine, printf } = format;
 const fs = require("fs"),
-  moment = require("moment");
+  moment = require("moment"),
+  logLevel = require("../config/config").logLevel
 
 //set up my format to be as such Date | LEVEL | METHOD url | [label]: message | err.stack
 const myFormat = printf(info => {
   return (
-    `[${info.timestamp}] | ` +
-    info.level.toUpperCase() +
-    ` | ${info.label} : ${info.message} ${info.err}`
+    `[${info.timestamp}] | ${info.level.toUpperCase()} | ${info.label} : ${info.message} ${info.err}`
   );
 });
 
@@ -51,16 +66,18 @@ const setLoggerFileDestination = () => {
       dateObj.todayString +
       "_errors.log";
 
+
+  
     const combinedLogTransport = new transports.File({
       name: "dailyLog",
       filename: combinedLogName,
-      level: "info" //logs everything warning and below to combinedLogName
+      level: logLevel //logs everything info and below to combinedLogName
     });
 
     const errorLogTransport = new transports.File({
       name: "errorLog",
       filename: errorLogName,
-      level: "error" //logs everything error and below to errorLogName
+      level: "error" //logs only errors
     });
 
     const consoleTransport = new transports.Console();
@@ -96,8 +113,8 @@ const createFolderHierarchyByDate = (month, year) => {
  */
 const getTodaysDate = () => {
   const today = new Date();
-  const day = today.getDate();
-  const month = today.getMonth() + 1;
+  let day = today.getDate();
+  let month = today.getMonth() + 1;
   const year = today.getFullYear();
 
   if (day < 10) {
