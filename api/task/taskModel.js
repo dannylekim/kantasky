@@ -1,6 +1,11 @@
+// ================= Initializations ===============
+
 "use strict";
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+
+
+// ================= Schemas ===============
 
 const taskSchema = new Schema({
   name: {
@@ -33,11 +38,9 @@ const taskSchema = new Schema({
     ],
     default: ["normal"]
   },
-  user: {
-    type: [],
-    default: ['none']
-  },
-  categories: {
+  user: String,
+  group: String,
+  category: {
     type: String,
     default: "Misc."
   }

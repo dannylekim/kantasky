@@ -1,7 +1,12 @@
+// ================= Initializations ===============
+
 "use strict";
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
+const errorHandler = require("../../utility/errorUtil");
+
+// ================= Functions ===============
 
 const userSchema = new Schema({
   email: {
@@ -33,25 +38,47 @@ const userSchema = new Schema({
     type: String,
     required: "Please put a last name"
   },
-  //remake this
-  groups : [{
-    category: [{
-      type: String,
-      enum:["group", "personal"]
-    }],
-    groupID: []
-  }],
-  notifications: []
+  groups: [
+    {
+      category: {
+        type: String,
+        enum: ["group", "personal"]
+      },
+      groupId: String,
+      _id: false
+    }
+  ],
+  notifications: [],
+  createdDate: [
+    {
+      type: Date,
+      default: Date.now
+    }
+  ]
 });
 
-userSchema.methods.isPasswordValid = function(password, callback, id) {
-  const storedHash = this.password;
-  bcrypt.compare(password, storedHash, function(err, res) {
-    if (err) {
-      callback(err);
+
+/**
+ * Verifies the validity by comparing the tried password and the stored password
+ * 
+ * @param {any} password 
+ * @returns 
+ */
+userSchema.methods.isPasswordValid = async function(password) {
+  try {
+    const storedHash = this.password;
+    const res = await bcrypt.compare(password, storedHash); // verification 
+    if (!res) {
+      let error = errorHandler.createOperationalError(
+        "Wrong Password. Please Try Again.", 401
+      );
+      return Promise.reject(error);
     }
-    callback(null, res, id);
-  });
+    return Promise.resolve();
+  } catch (e) {
+    e.isOperational = true;
+    return Promise.reject(e);
+  }
 };
 
 module.exports = mongoose.model("User", userSchema);

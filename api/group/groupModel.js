@@ -1,26 +1,37 @@
+// ================= Initializations ===============
+
 "use strict";
 const mongoose = require("mongoose"),
   Schema = mongoose.Schema;
 
+
+// ================= Schema ===============  
 const groupSchema = new Schema({
-    users: [],
-    //remake this
-    tasks: {
-        type: [],
-        default: ['none']
-    },
-    name: {
-        type: String,
-        required: "Please input a name for the group"
-    },
-    createdDate: {
-        type: Date,
-        default: Date.now
-    },
-    teamLeader: {
-        type: [],
-        required: "A Team Leader must be assigned to this group"
-})
+  users: [
+    {
+      userId: String,
+      taskId: [String],
+      _id: false
+    }
+  ],
+  name: {
+    type: String,
+    required: "Please input a name for the group."
+  },
+  createdDate: {
+    type: Date,
+    default: Date.now
+  },
+  teamLeader: {
+    name: String, 
+    leaderId: String,
+  },
+  category: {
+    type: String,
+    enum: ['group', 'personal'],
+    required: "Need to specify the category of this group.",
+    _id: false
+  }
+});
 
 module.exports = mongoose.model("Group", groupSchema);
-
