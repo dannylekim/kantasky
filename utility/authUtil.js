@@ -25,7 +25,6 @@ exports.verifyPassword = async userData => {
       return Promise.resolve(user);
     }
   } catch (err) {
-    err.isOperational = true;
     return Promise.reject(err);
   }
 };
