@@ -69,7 +69,7 @@ userSchema.methods.isPasswordValid = async function(password) {
     const storedHash = this.password;
     const res = await bcrypt.compare(password, storedHash); // verification 
     if (!res) {
-      var error = errorHandler.createOperationalError(
+      let error = errorHandler.createOperationalError(
         "Wrong Password. Please Try Again.", 401
       );
       return Promise.reject(error);
