@@ -1,19 +1,46 @@
+// ================= Initializations ===============
+
 "use strict";
 const taskController = require("./taskController"),
   passport = require("passport"),
   router = require("express").Router();
 
+// ================= Schemas ===============
+
 router
-  .route("/")
-  .get(passport.authenticate("jwt", { session: false }), taskController.getAllTasks)
-  .post(passport.authenticate("jwt", { session: false }), taskController.createTask);
+  .route("/:userId")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    taskController.getUsersTask
+  );
+
+router
+  .route("/:groupId/:userId")
+  .post(
+    passport.authenticate("jwt", { session: false }),
+    taskController.createTaskInGroup
+  )
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    taskController.getUsersTasksInGroup
+  );
 
 router
   .route("/:taskId")
-  .get(passport.authenticate("jwt", { session: false }),taskController.getTask)
-  .put(passport.authenticate("jwt", { session: false }),taskController.updateTask)
-  .delete(passport.authenticate("jwt", { session: false }),taskController.deleteTask);
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    taskController.updateTask
+  )
+  .delete(
+    passport.authenticate("jwt", { session: false }),
+    taskController.deleteTask
+  );
+
+router
+  .route("/")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    taskController.getAllTasks
+  );
 
 module.exports = router;
-
-

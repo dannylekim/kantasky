@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "nodemon ./www/server.js",
+    "debug": "node --nolazy --inspect-brk=9229 ./www/server.js"
   },
   "repository": {
     "type": "git",
@@ -29,10 +30,13 @@
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
+    "cors": "^2.8.4",
     "express": "^4.16.2",
     "jsonwebtoken": "^8.1.0",
+    "moment": "^2.19.4",
     "mongoose": "^4.13.1",
     "passport": "^0.4.0",
-    "passport-jwt": "^3.0.1"
+    "passport-jwt": "^3.0.1",
+    "winston": "^3.0.0-rc1"
   }
 }
