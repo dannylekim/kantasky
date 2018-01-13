@@ -128,14 +128,14 @@ exports.createUser = async (req, res, next) => {
     //Finding user checks. If username or email already exists in the db, then reject
     if (foundUser) {
       const err = errorHandler.createOperationalError(
-        "A user with this username already exists, please choose another one."
+        "A user with this username already exists, please choose another one.", 401
       );
       throw err;
     }
     foundUser = await user.findOne({ email: req.body.email });
     if (foundUser) {
       const err = errorHandler.createOperationalError(
-        "This email is already in use!"
+        "This email is already in use!", 401
       );
       throw err;
     }
