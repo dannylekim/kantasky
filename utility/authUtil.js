@@ -74,31 +74,31 @@ exports.isPasswordValid = (password) => {
     if (password > 160)
       return reject(
         errorHandler.createOperationalError(
-          "Too many characters. Password must not be over 160 characters"
+          "Too many characters. Password must not be over 160 characters", 401
         )
       );
     if (!/\d/.test(password))
       return reject(
         errorHandler.createOperationalError(
-          "Password must contain at least a numeric character."
+          "Password must contain at least a numeric character.", 401
         )
       );
     if (!/[a-z]/.test(password))
       return reject(
         errorHandler.createOperationalError(
-          "Password must contain at least a lower case character."
+          "Password must contain at least a lower case character.", 401
         )
       );
     if (!/[A-Z]/.test(password))
       return reject(
         errorHandler.createOperationalError(
-          "Password must contain at least an upper case character."
+          "Password must contain at least an upper case character.", 401
         )
       );
     if (!/[^0-9a-zA-Z]/.test(password))
       return reject(
         errorHandler.createOperationalError(
-          "Password must contain at least a symbol character."
+          "Password must contain at least a symbol character.", 401
         )
       );
     return resolve();
