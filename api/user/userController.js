@@ -1,6 +1,6 @@
 // ============ Initializations =============
 
-"use strict";
+("use strict");
 
 const mongoose = require("mongoose"),
   user = mongoose.model("User"),
@@ -61,7 +61,7 @@ exports.authenticate = async (req, res, next) => {
  */
 function createJsonToken(user) {
   const payload = { id: user.id, role: user.role };
-  const token = jwt.sign(payload, config.secret, { expiresIn: "10h" });
+  const token = jwt.sign(payload, config.secret);
   return token;
 }
 
@@ -122,22 +122,23 @@ exports.createUser = async (req, res, next) => {
       "Checking if the password fulfills the requirements",
       ""
     );
-    await auth.isPasswordValid(req.body.password);
+    let errors = await auth.isPasswordValid(req.body.password);
     let foundUser = (await user.find({ username: req.body.username }))[0];
 
     //Finding user checks. If username or email already exists in the db, then reject
-    if (foundUser) {
-      const err = errorHandler.createOperationalError(
-        "A user with this username already exists, please choose another one.", 401
+    if (foundUser)
+      errors.push(
+        "A user with this username already exists, please choose another one."
       );
-      throw err;
-    }
+
     foundUser = await user.findOne({ email: req.body.email });
-    if (foundUser) {
-      const err = errorHandler.createOperationalError(
-        "This email is already in use!", 401
-      );
-      throw err;
+    if (foundUser) errors.push("This email is already in use!");
+
+    if (errors.length > 0) {
+      let err = errorHandler.createOperationalError("", 401);
+      err.message = errors
+      throw err
+
     }
 
     //hash the password, save it into the database and then return the user without password or role
