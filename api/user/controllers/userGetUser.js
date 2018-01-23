@@ -23,7 +23,6 @@ const mongoose = require("mongoose"),
  */
 exports.getUser = async (req,res, next) => { 
     try {
-  
       //check token Id and requested User Id and see if they're the same. 
       let authorizationHeader = req.get("authorization")
       authorizationHeader = authorizationHeader.replace("Bearer ", "")
