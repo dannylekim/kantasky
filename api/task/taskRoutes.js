@@ -16,7 +16,7 @@ const passport = require("passport"),
 
 router
   .route("/:userId")
-  .get(passport.authenticate("jwt", { session: false }), getUsersTask);
+  .get(passport.authenticate("jwt", { session: false }), getUsersTasks);
 
 router
   .route("/:groupId/:userId")

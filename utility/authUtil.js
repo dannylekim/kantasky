@@ -43,6 +43,7 @@ exports.getUser = (userId, callback) => {
 
 //================= Authorization =============================
 /**
+ * TODO: CHECK THE USER not the token
  * Checks the token for admin privileges
  *
  * @param {any} token has the ID and Role
