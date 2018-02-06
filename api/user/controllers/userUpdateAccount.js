@@ -64,7 +64,7 @@ exports.updateAccountInformation = async (req, res, next) => {
         "============= Successfully updated the Account =============",
         ""
       );
-      res.json({ message: "Successfully updated the user's information." });
+      res.send(foundUser);
     } catch (err) {
       next(err);
     }
