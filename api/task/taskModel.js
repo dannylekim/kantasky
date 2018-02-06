@@ -43,7 +43,8 @@ const taskSchema = new Schema({
   category: {
     type: String,
     default: "Misc."
-  }
+  },
+  description: String
 });
 
 module.exports = mongoose.model("Task", taskSchema);
