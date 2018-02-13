@@ -7,7 +7,8 @@ const passport = require("passport"),
   createGroup = require("./controllers/groupCreateGroup").createGroup,
   getGroup = require("./controllers/groupGetGroup").getGroup,
   updateGroup = require("./controllers/groupUpdateGroup").updateGroup,
-  deleteGroup = require("./controllers/groupDeleteGroup").deleteGroup;
+  deleteGroup = require("./controllers/groupDeleteGroup").deleteGroup,
+  getAllUsersGroups = require("./controllers/groupGetAllUsersGroups").getAllUsersGroups
 
 // ================= Routes ===============
 
@@ -17,8 +18,10 @@ router
 
 router
   .route("/:userId")
-  .post(passport.authenticate("jwt", { session: false }), createGroup);
+  .post(passport.authenticate("jwt", { session: false }), createGroup)
+  .get(passport.authenticate("jwt", { session: false }), getAllUsersGroups);
 
+  
 router
   .route("/:groupId")
   .get(passport.authenticate("jwt", { session: false }), getGroup)
