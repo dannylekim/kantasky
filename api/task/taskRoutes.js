@@ -1,3 +1,5 @@
+import { getGroupsTasks } from "./controllers/taskGetGroupsTasks";
+
 // ================= Initializations ===============
 
 "use strict";
@@ -10,8 +12,8 @@ const passport = require("passport"),
     .getUsersTasksInGroup,
   updateTask = require("./controllers/taskUpdateTask").updateTask,
   deleteTask = require("./controllers/taskDeleteTask").deleteTask,
-  getAllTasks = require("./admin/taskGetAllTasks").getAllTasks;
-
+  getAllTasks = require("./admin/taskGetAllTasks").getAllTasks,
+  getGroupsTasks = require("./controllers/taskGetGroupsTasks").getGroupsTasks;
 // ================= Schemas ===============
 
 router
@@ -22,6 +24,11 @@ router
   .route("/:groupId/:userId")
   .post(passport.authenticate("jwt", { session: false }), createTaskInGroup)
   .get(passport.authenticate("jwt", { session: false }), getUsersTasksInGroup);
+
+  router
+  .route("/:groupId/")
+  .get(passport.authenticate("jwt", {session: false}), getGroupsTasks)
+
 
 router
   .route("/:taskId")
