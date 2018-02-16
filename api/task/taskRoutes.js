@@ -1,5 +1,3 @@
-import { getGroupsTasks } from "./controllers/taskGetGroupsTasks";
-
 // ================= Initializations ===============
 
 "use strict";
@@ -20,14 +18,15 @@ router
   .route("/:userId")
   .get(passport.authenticate("jwt", { session: false }), getUsersTasks);
 
+  router
+  .route("/groupTasks/:groupId/")
+  .get(passport.authenticate("jwt", {session: false}), getGroupsTasks)
+
 router
   .route("/:groupId/:userId")
   .post(passport.authenticate("jwt", { session: false }), createTaskInGroup)
   .get(passport.authenticate("jwt", { session: false }), getUsersTasksInGroup);
 
-  router
-  .route("/:groupId/")
-  .get(passport.authenticate("jwt", {session: false}), getGroupsTasks)
 
 
 router
