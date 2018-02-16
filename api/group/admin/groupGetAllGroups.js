@@ -18,7 +18,7 @@ const mongoose = require("mongoose"),
  * @param {any} req
  * @param {any} res
  */
-exports.getAllGroups = async (req, res) => {
+exports.getAllGroups = async (req, res, next) => {
     logger.log(
       "info",
       req.method + " " + req.baseUrl + req.url,
