@@ -4,8 +4,7 @@
 const mongoose = require("mongoose"),
   Schema = mongoose.Schema;
 
-
-// ================= Schema ===============  
+// ================= Schema ===============
 const groupSchema = new Schema({
   users: [
     {
@@ -23,14 +22,17 @@ const groupSchema = new Schema({
     default: Date.now
   },
   teamLeader: {
-    name: String, 
-    leaderId: String,
+    name: String,
+    leaderId: String
   },
   category: {
     type: String,
-    enum: ['group', 'personal'],
+    enum: ["group", "personal"],
     required: "Need to specify the category of this group.",
     _id: false
+  },
+  description: {
+    type: String
   }
 });
 

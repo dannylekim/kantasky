@@ -13,8 +13,8 @@ const userModel = require("mongoose").model("User"),
 exports.verifyPassword = async userData => {
   try {
     let user = await userModel.findOne({ username: userData.username }); //database call for finding user
-    if(!user) user = await userModel.findOne({email: userData.username}) //another db call to see check the email
-    if (!user) {  
+    if (!user) user = await userModel.findOne({ email: userData.username }); //another db call to see check the email
+    if (!user) {
       let err = errorHandler.createOperationalError(
         "User has not been found",
         401
@@ -43,12 +43,13 @@ exports.getUser = (userId, callback) => {
 
 //================= Authorization =============================
 /**
+ * TODO: CHECK THE USER not the token
  * Checks the token for admin privileges
- * 
+ *
  * @param {any} token has the ID and Role
  * @returns error or resolve
  */
-exports.isAdmin = (token) => {
+exports.isAdmin = token => {
   return new Promise((resolve, reject) => {
     token = token.replace("Bearer ", "");
     const user = jwt.decode(token); //decodes the token
@@ -69,44 +70,33 @@ exports.isAdmin = (token) => {
  * @param {any} password the password
  * @returns returns control back to the caller
  */
-exports.isPasswordValid = (password) => {
+exports.isPasswordValid = password => {
   return new Promise((resolve, reject) => {
+    let errors = [];
+
     if (password > 160)
-      return reject(
-        errorHandler.createOperationalError(
-          "Too many characters. Password must not be over 160 characters"
-        )
+      errors.push(
+        "Too many characters. Password must not be over 160 characters"
       );
+
     if (!/\d/.test(password))
-      return reject(
-        errorHandler.createOperationalError(
-          "Password must contain at least a numeric character."
-        )
-      );
+      errors.push("Password must contain at least a numeric character.");
+
     if (!/[a-z]/.test(password))
-      return reject(
-        errorHandler.createOperationalError(
-          "Password must contain at least a lower case character."
-        )
-      );
+      errors.push("Password must contain at least a lower case character.");
+
     if (!/[A-Z]/.test(password))
-      return reject(
-        errorHandler.createOperationalError(
-          "Password must contain at least an upper case character."
-        )
-      );
+      errors.push("Password must contain at least an upper case character.");
+
     if (!/[^0-9a-zA-Z]/.test(password))
-      return reject(
-        errorHandler.createOperationalError(
-          "Password must contain at least a symbol character."
-        )
-      );
-    return resolve();
+      errors.push("Password must contain at least a symbol character.");
+
+    return resolve(errors);
   });
 };
 
 //================ Decode =========================
 
-exports.getIdFromToken = (token) => {
+exports.getIdFromToken = token => {
   return jwt.decode(token).id;
 };
