@@ -72,7 +72,7 @@ exports.createTaskInGroup = async (req, res, next) => {
         "============= Successfully Finished Created Task in Group =============",
         ""
       );
-      res.send(foundGroup);
+      res.send(newTask);
     } catch (err) {
       next(err);
     }

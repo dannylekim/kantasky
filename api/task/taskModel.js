@@ -4,7 +4,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-
 // ================= Schemas ===============
 
 const taskSchema = new Schema({
@@ -21,21 +20,13 @@ const taskSchema = new Schema({
     default: undefined
   },
   status: {
-    type: [
-      {
-        type: String,
-        enum: ["pending", "ongoing", "completed"]
-      }
-    ],
+    type: String,
+    enum: ["pending", "ongoing", "completed"],
     default: ["pending"]
   },
   importance: {
-    type: [
-      {
-        type: String,
-        enum: ["normal", "important", "urgent"]
-      }
-    ],
+    type: String,
+    enum: ["normal", "important", "urgent"],
     default: ["normal"]
   },
   user: String,
