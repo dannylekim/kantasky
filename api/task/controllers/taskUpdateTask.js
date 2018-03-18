@@ -27,8 +27,9 @@ exports.updateTask = async (req, res, next) => {
     );
   
     try {
+      //TODO: At the end of this method, you must set the variables rather than replacing
       //groups can not be changed so undefined it if it's there
-      req.body.group = undefined;
+     //req.body.group = undefined;
   
       const reqId = auth.getIdFromToken(
         req.get("authorization").replace("Bearer ", "")
@@ -118,7 +119,7 @@ exports.updateTask = async (req, res, next) => {
         "============= Successfully Finished Update Task =============",
         ""
       );
-      res.json({ message: "Task has successfully been updated" });
+      res.json(foundTask);
     } catch (err) {
       next(err);
     }
