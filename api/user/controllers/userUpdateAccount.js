@@ -64,6 +64,9 @@ exports.updateAccountInformation = async (req, res, next) => {
         "============= Successfully updated the Account =============",
         ""
       );
+
+      foundUser.password = undefined
+      foundUser.role = undefined
       res.send(foundUser);
     } catch (err) {
       next(err);
