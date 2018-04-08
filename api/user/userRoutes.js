@@ -11,6 +11,7 @@ const router = require("express").Router(),
   updateAccountInformation = require("./controllers/userUpdateAccount")
     .updateAccountInformation,
   getUser = require("./controllers/userGetUser").getUser,
+  searchUser = require("./controllers/userGetUser").searchUser,
   changePassword = require("./controllers/userChangePassword").changePassword;
 
 // ================= Routes ===============
@@ -34,5 +35,9 @@ router
 router
   .route("/changePassword/:userId")
   .put(passport.authenticate("jwt", { session: false }), changePassword);
+
+router
+  .route("/searchUser/:email")
+  .get(passport.authenticate("jwt", { session: false }), searchUser);
 
 module.exports = router;
