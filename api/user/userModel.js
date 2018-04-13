@@ -50,8 +50,8 @@ const userSchema = new Schema({
   ],
   notifications: [
     {
-      groupId: { type: String, required: "Please put in a group Id" },
-      teamLeader: { type: String, required: "Please put in a Team Leader" },
+      groupId: { required: "Please put in a groupId" },
+      teamLeader: {required: "Please put in a Team Leader"},
       description: String,
       name: { type: String, required: "Please put in a name" },
       _id: false

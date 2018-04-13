@@ -1,4 +1,4 @@
-//TODO: NEED TO MAKE A NEW NOTIFICATION MODEL 
+//TODO: NEED TO MAKE A NEW NOTIFICATION MODEL
 
 // ============ Initializations =============
 
@@ -53,12 +53,12 @@ exports.inviteUser = async (req, res, next) => {
       ""
     );
 
-    const notification = { 
-        groupId: foundGroup._id,
-        teamLeader: foundGroup.teamLeader,
-        description: foundGroup.description,
-        name: foundGroup.name
-    }
+    const notification = {
+      groupId: foundGroup._id,
+      teamLeader: foundGroup.teamLeader,
+      description: foundGroup.description,
+      name: foundGroup.name
+    };
     foundUser.notifications.push(notification);
 
     logger.log("info", "user.save", "Saving...", "");
@@ -73,6 +73,7 @@ exports.inviteUser = async (req, res, next) => {
 
     res.json({ message: "Successfully invited user" });
   } catch (err) {
+    err.isOperational = true;
     next(err);
   }
 };
