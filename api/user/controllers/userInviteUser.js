@@ -1,3 +1,5 @@
+//TODO: NEED TO MAKE A NEW NOTIFICATION MODEL 
+
 // ============ Initializations =============
 
 ("use strict");
