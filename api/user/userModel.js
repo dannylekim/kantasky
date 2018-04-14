@@ -48,7 +48,17 @@ const userSchema = new Schema({
       _id: false
     }
   ],
-  notifications: [],
+
+  //this should be its own model with its own CRUD functions but this is a quicker implementation
+  notifications: [
+    {
+      groupId: String,
+      teamLeader: String,
+      description: String,
+      name: String,
+      _id: false
+    }
+  ],
   createdDate: [
     {
       type: Date,
@@ -57,20 +67,20 @@ const userSchema = new Schema({
   ]
 });
 
-
 /**
  * Verifies the validity by comparing the tried password and the stored password
- * 
- * @param {any} password 
- * @returns 
+ *
+ * @param {any} password
+ * @returns
  */
 userSchema.methods.isPasswordValid = async function(password) {
   try {
     const storedHash = this.password;
-    const res = await bcrypt.compare(password, storedHash); // verification 
+    const res = await bcrypt.compare(password, storedHash); // verification
     if (!res) {
       let error = errorHandler.createOperationalError(
-        "Wrong Password. Please Try Again.", 401
+        "Wrong Password. Please Try Again.",
+        401
       );
       return Promise.reject(error);
     }

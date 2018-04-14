@@ -46,3 +46,33 @@ exports.getUser = async (req,res, next) => {
       next(err)
     }
   }
+
+
+  /**
+ * Gets a specific user. Used only for searches, removes their details besides first name, last name and email. Search by email.
+ * 
+ * @param {any} req 
+ * @param {any} res 
+ * @param {any} next 
+ */
+exports.searchUser = async (req,res, next) => { 
+  try {
+    //get user and send
+
+    //TODO: can't find yourself
+    const foundUser = await user.findOne({email: req.params.email})
+    if(!foundUser) throw errorHandler.createOperationalError("User does not exist", 403)
+
+    const formattedUser = { 
+      firstName: foundUser.firstName,
+      lastName: foundUser.lastName,
+      email: foundUser.email,
+      id: foundUser._id
+    }
+    res.send(formattedUser)
+
+  }
+  catch(err) { 
+    next(err)
+  }
+}
