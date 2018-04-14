@@ -58,13 +58,16 @@ exports.getUser = async (req,res, next) => {
 exports.searchUser = async (req,res, next) => { 
   try {
     //get user and send
+
+    //TODO: can't find yourself
     const foundUser = await user.findOne({email: req.params.email})
     if(!foundUser) throw errorHandler.createOperationalError("User does not exist", 403)
 
     const formattedUser = { 
       firstName: foundUser.firstName,
       lastName: foundUser.lastName,
-      email: foundUser.email
+      email: foundUser.email,
+      id: foundUser._id
     }
     res.send(formattedUser)
 
