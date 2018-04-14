@@ -11,7 +11,6 @@ const mongoose = require("mongoose"),
   jwt = require("jsonwebtoken"),
   logger = require("../../../utility/logUtil");
 
-
 //===============================================
 
 /**
@@ -22,19 +21,21 @@ const mongoose = require("mongoose"),
  * @param {any} next error Handler
  */
 exports.changePassword = async (req, res, next) => {
-  logger.log(
-    "info",
-    req.method + " " + req.baseUrl + req.url,
-    "============= Starting Change Password =============",
-    ""
-  );
-
-  //check for empty
-  if (!req.body.password) {
-    const err = errorHandler.createOperationalError("Please input a password");
-    throw err;
-  }
   try {
+    logger.log(
+      "info",
+      req.method + " " + req.baseUrl + req.url,
+      "============= Starting Change Password =============",
+      ""
+    );
+
+    //check for empty
+    if (!req.body.password) {
+      const err = errorHandler.createOperationalError(
+        "Please input a password"
+      );
+      throw err;
+    }
     //check to see if properly valid and secure
 
     logger.log(
@@ -44,13 +45,18 @@ exports.changePassword = async (req, res, next) => {
       ""
     );
 
-    await auth.isPasswordValid(req.body.password);
+    let errors = await auth.isPasswordValid(req.body.password);
+    if (errors.length > 0) {
+      let err = errorHandler.createOperationalError("", 401);
+      err.message = errors
+      throw err
+    }
     let foundUser = await user.findOne({ _id: req.params.userId });
 
     //verify if in db
     if (!foundUser) {
       const err = errorHandler.createOperationalError(
-        "Use does not exist in the database",
+        "User does not exist in the database",
         500
       );
       throw err;
@@ -61,6 +67,8 @@ exports.changePassword = async (req, res, next) => {
       req.body.password,
       foundUser.password
     );
+
+    //TODO: Possibly need to check that the user input the right password/login or else anyone can go through this route
     if (isOldPassword) {
       const err = errorHandler.createOperationalError(
         "Please input a new password"
