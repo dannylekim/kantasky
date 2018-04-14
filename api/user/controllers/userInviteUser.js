@@ -46,6 +46,9 @@ exports.inviteUser = async (req, res, next) => {
     if (!foundGroup)
       throw errorHandler.createOperationalError("Group does not exist", 500);
 
+    //TODO: Check if the group is already in the notification list 
+    //TODO: check if the user already has this group in his groups list
+
     logger.log(
       "info",
       "notifications.push",
@@ -73,7 +76,6 @@ exports.inviteUser = async (req, res, next) => {
 
     res.json({ message: "Successfully invited user" });
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };

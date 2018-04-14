@@ -103,7 +103,6 @@ exports.joinGroup = async (req, res, next) => {
 
     res.json({ message: "Successfully Joined Group" });
   } catch (err) {
-    err.isOperational = true;
     next(err);
   }
 };

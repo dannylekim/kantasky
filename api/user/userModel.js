@@ -48,12 +48,14 @@ const userSchema = new Schema({
       _id: false
     }
   ],
+
+  //this should be its own model with its own CRUD functions but this is a quicker implementation
   notifications: [
     {
-      groupId: { required: "Please put in a groupId" },
-      teamLeader: {required: "Please put in a Team Leader"},
+      groupId: String,
+      teamLeader: String,
       description: String,
-      name: { type: String, required: "Please put in a name" },
+      name: String,
       _id: false
     }
   ],
