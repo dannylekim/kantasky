@@ -10,7 +10,8 @@ const passport = require("passport"),
   deleteGroup = require("./controllers/groupDeleteGroup").deleteGroup,
   getAllUsersGroups = require("./controllers/groupGetAllUsersGroups")
     .getAllUsersGroups,
-  joinGroup = require("./controllers/groupJoinGroup").joinGroup;
+  joinGroup = require("./controllers/groupJoinGroup").joinGroup,
+  leaveGroup = require("./controllers/groupLeaveGroup").leaveGroup;
 
 // ================= Routes ===============
 
@@ -27,10 +28,14 @@ router
   .route("/:groupId")
   .get(passport.authenticate("jwt", { session: false }), getGroup)
   .put(passport.authenticate("jwt", { session: false }), updateGroup)
-  .delete(passport.authenticate("jwt", { session: false })  , deleteGroup);
+  .delete(passport.authenticate("jwt", { session: false }), deleteGroup);
 
 router
   .route("/join/:groupId")
   .get(passport.authenticate("jwt", { session: false }), joinGroup);
+
+router
+  .route("leave/:groupId")
+  .post(passport.authenticate("jwt", { session: false }), leaveGroup);
 
 module.exports = router;

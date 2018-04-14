@@ -43,12 +43,12 @@ exports.updateTask = async (req, res, next) => {
           500
         );
   
-      if (foundTask.user !== reqId) {
-        throw errorHandler.createOperationalError(
-          "Only the task's user can update his own tasks.",
-          401
-        );
-      }
+      // if (foundTask.user !== reqId) {
+      //   throw errorHandler.createOperationalError(
+      //     "Only the task's user can update his own tasks.",
+      //     401
+      //   );
+      // }
   
       //check if it's correct user
       if (req.body.user) {

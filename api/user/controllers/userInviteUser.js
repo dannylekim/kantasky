@@ -48,6 +48,7 @@ exports.inviteUser = async (req, res, next) => {
 
     //TODO: Check if the group is already in the notification list 
     //TODO: check if the user already has this group in his groups list
+    //TODO: can't invite yourself
 
     logger.log(
       "info",
