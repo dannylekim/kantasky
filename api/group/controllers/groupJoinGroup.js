@@ -81,6 +81,17 @@ exports.joinGroup = async (req, res, next) => {
 
     foundUser.notifications = oneLessNotification;
 
+    const hasGroupAlreadyIn = foundUser.groups.find(group => {
+      return group.groupId === foundGroup._id;
+    });
+
+    if(hasGroupAlreadyIn){
+      throw errorHandler.createOperationalError(
+        "User is already a part of this group",
+        403
+      );
+    }
+
     logger.log("info", "userGroup.users.push", "Saving user in group", "");
     //add user to group
     if (foundGroup.category !== "personal") {

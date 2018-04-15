@@ -11,7 +11,6 @@ const mongoose = require("mongoose"),
   logger = require("../../../utility/logUtil");
 
 //TODO: TEST -- SEEMS TO WORK
-//TODO: REFACTOR THE CODE TO UPDATE USERS INTO A NEW FUNCTION FOR ACCEPTING GROUP INVITES
 /**
  * Updates the group. The fields edited are teamLeader, Users and the group name. Changing team Leader and Users requires that
  * the group is category group and that the requester is a team leader.
