@@ -59,7 +59,7 @@ exports.leaveGroup = async (req, res, next) => {
     }
 
     if (foundGroup.users.length === 1) {
-      //TODO: delete the group
+      deleteGroup(foundUser)
     }
 
     logger.log("info", "", "Trying to put in the new TeamLeader", "");
@@ -131,3 +131,54 @@ exports.leaveGroup = async (req, res, next) => {
     next(err);
   }
 };
+
+
+const deleteGroup = async (foundGroup) => {
+ 
+  logger.log(
+    "info",
+    req.method + " " + req.baseUrl + req.url,
+    "============= Start Delete Group =============",
+    ""
+  );
+
+  let usersList = [];
+  let tasksList = [];
+  for (let groupUser of foundGroup.users) {
+    if (groupUser.userId !== "general") {
+      usersList.push(groupUser.userId);
+      tasksList.push(groupUser.taskId);
+    }
+  }
+
+  const foundUsers = await user.find({ _id: { $in: usersList } });
+  if (foundUsers.length !== usersList.length)
+    throw errorHandler("Error in how many users in group vs database");
+
+  logger.log(
+    "info",
+    ".splice() the group out of groupUser and save()",
+    "Splicing and Updating all the groups",
+    ""
+  );
+  for (let groupUser of foundUsers) {
+    for (let index = 0; index < groupUser.groups.length; index++) {
+      if (req.params.groupId === groupUser.groups[index].groupId) {
+        groupUser.groups = groupUser.groups.splice(index, 1);
+        await groupUser.save();
+        break;
+      }
+    }
+  }
+
+  logger.log("info", "task.remove()", "Remove all Tasks", "");
+  await task.remove({ _id: { $in: tasksList } });
+  await group.remove({ _id: foundGroup_id});
+
+  logger.log(
+    "info",
+    req.method + " " + req.baseUrl + req.url,
+    "============= Successfully Deleted Group =============",
+    ""
+  );
+}

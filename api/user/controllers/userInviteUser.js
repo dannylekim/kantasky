@@ -46,9 +46,42 @@ exports.inviteUser = async (req, res, next) => {
     if (!foundGroup)
       throw errorHandler.createOperationalError("Group does not exist", 500);
 
-    //TODO: Check if the group is already in the notification list 
-    //TODO: check if the user already has this group in his groups list
-    //TODO: can't invite yourself
+    //Check if the group is already in the notification list
+
+    const hasSamenotification = foundUser.notifications.find(notification => {
+      return notification.groupId === foundGroup._id;
+    });
+
+    if (hasSamenotification) {
+      throw errorHandler.createOperationalError(
+        "User already has a pending invitation to this group",
+        403
+      );
+    }
+
+    // check if the user already has this group in his groups list
+
+    const hasGroupAlreadyIn = foundUser.groups.find(group => {
+      return group.groupId === foundGroup._id;
+    });
+
+    if (hasGroupAlreadyIn) {
+      throw errorHandler.createOperationalError(
+        "User is already a part of this group",
+        403
+      );
+    }
+
+    //can't invite yourself
+    const token = req.get("authorization");
+    const userId = auth.getIdFromToken(token);
+
+    if (userId === foundUser._id) {
+      throw errorHandler.createOperationalError(
+        "User cannot invite themselves to a group",
+        403
+      );
+    }
 
     logger.log(
       "info",
