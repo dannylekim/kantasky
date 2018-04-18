@@ -59,7 +59,7 @@ exports.leaveGroup = async (req, res, next) => {
     }
 
     if (foundGroup.users.length === 1) {
-      deleteGroup(foundUser)
+      deleteGroup(foundUser);
     }
 
     logger.log("info", "", "Trying to put in the new TeamLeader", "");
@@ -76,6 +76,20 @@ exports.leaveGroup = async (req, res, next) => {
       );
       throw err;
     }
+    
+    const foundTeamLeader = foundGroup.users.find((user) => {
+      return user.userId === req.body.teamLeader.leaderId
+    })
+
+    if(!foundTeamLeader) {
+      const err = errorHandler.createOperationalError(
+        "Need to assign a new teamLeader to a user that exists within the group",
+        403
+      );
+      throw err;
+    }
+
+    foundGroup.teamLeader = req.body.teamLeader;
 
     logger.log(
       "info",
@@ -132,9 +146,7 @@ exports.leaveGroup = async (req, res, next) => {
   }
 };
 
-
-const deleteGroup = async (foundGroup) => {
- 
+const deleteGroup = async foundGroup => {
   logger.log(
     "info",
     req.method + " " + req.baseUrl + req.url,
@@ -173,7 +185,7 @@ const deleteGroup = async (foundGroup) => {
 
   logger.log("info", "task.remove()", "Remove all Tasks", "");
   await task.remove({ _id: { $in: tasksList } });
-  await group.remove({ _id: foundGroup_id});
+  await group.remove({ _id: foundGroup_id });
 
   logger.log(
     "info",
@@ -181,4 +193,4 @@ const deleteGroup = async (foundGroup) => {
     "============= Successfully Deleted Group =============",
     ""
   );
-}
+};
