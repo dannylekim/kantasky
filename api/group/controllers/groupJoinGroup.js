@@ -85,7 +85,7 @@ exports.joinGroup = async (req, res, next) => {
       return group.groupId === foundGroup._id;
     });
 
-    if(hasGroupAlreadyIn){
+    if (hasGroupAlreadyIn) {
       throw errorHandler.createOperationalError(
         "User is already a part of this group",
         403
@@ -112,7 +112,7 @@ exports.joinGroup = async (req, res, next) => {
 
     foundUser = await foundUser.save();
 
-    res.json({ message: "Successfully Joined Group" });
+    res.send(foundGroup);
   } catch (err) {
     next(err);
   }
