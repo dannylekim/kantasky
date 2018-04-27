@@ -35,7 +35,7 @@ router
   .get(passport.authenticate("jwt", { session: false }), joinGroup);
 
 router
-  .route("leave/:groupId")
+  .route("/leave/:groupId")
   .post(passport.authenticate("jwt", { session: false }), leaveGroup);
 
 module.exports = router;
