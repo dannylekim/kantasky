@@ -21,7 +21,7 @@ exports.leaveGroup = async (req, res, next) => {
     );
 
     logger.log("info", "auth.getIdFromToken", "Getting Id from the token", "");
-    const token = req.get("authorization");
+    const token = req.get("authorization").replace("Bearer ", "");
     const userId = auth.getIdFromToken(token);
 
     logger.log(
@@ -39,6 +39,14 @@ exports.leaveGroup = async (req, res, next) => {
       throw err;
     }
 
+    if (foundGroup.category === "personal") {
+      const err = errorHandler.createOperationalError(
+        "Can't leave a personal group! Must be deleted!",
+        500
+      );
+      throw err;
+    }
+
     logger.log(
       "info",
       "users.find",
@@ -47,7 +55,7 @@ exports.leaveGroup = async (req, res, next) => {
     );
     //check that this user is actually in this group
     const isUserInGroup = foundGroup.users.find(user => {
-      return user._id === userId;
+      return user.userId === userId;
     });
 
     if (!isUserInGroup) {
@@ -58,95 +66,97 @@ exports.leaveGroup = async (req, res, next) => {
       throw err;
     }
 
-    if (foundGroup.users.length === 1) {
-      deleteGroup(foundUser);
-    }
+    if (foundGroup.users.length === 2) {
+      //this is 2 because general will always be a part of a group!
+      await deleteGroup(foundGroup, req);
+      res.json({ message: "Group has been deleted!" });
+    } else {
+      logger.log("info", "", "Trying to put in the new TeamLeader", "");
 
-    logger.log("info", "", "Trying to put in the new TeamLeader", "");
+      //set new Team Leader
+      if (
+        !req.body.teamLeader ||
+        !req.body.teamLeader.name ||
+        !req.body.teamLeader.leaderId
+      ) {
+        const err = errorHandler.createOperationalError(
+          "Need to assign a new teamLeader",
+          403
+        );
+        throw err;
+      }
 
-    //set new Team Leader
-    if (
-      !req.body.teamLeader ||
-      !req.body.teamLeader.name ||
-      !req.body.teamLeader.leaderId
-    ) {
-      const err = errorHandler.createOperationalError(
-        "Need to assign a new teamLeader",
-        403
+      const foundTeamLeader = foundGroup.users.find(user => {
+        return user.userId === req.body.teamLeader.leaderId;
+      });
+
+      if (!foundTeamLeader) {
+        const err = errorHandler.createOperationalError(
+          "Need to assign a new teamLeader to a user that exists within the group",
+          403
+        );
+        throw err;
+      }
+
+      foundGroup.teamLeader = req.body.teamLeader;
+
+      logger.log(
+        "info",
+        "Retrieve user...",
+        "Check if user exists in database",
+        ""
       );
-      throw err;
-    }
-    
-    const foundTeamLeader = foundGroup.users.find((user) => {
-      return user.userId === req.body.teamLeader.leaderId
-    })
 
-    if(!foundTeamLeader) {
-      const err = errorHandler.createOperationalError(
-        "Need to assign a new teamLeader to a user that exists within the group",
-        403
+      //remove group from this user
+      let foundUser = user.findOne({ _id: userId });
+      if (!foundUser) {
+        const err = errorHandler.createOperationalError(
+          "User doesn't exist in the database",
+          403
+        );
+        throw err;
+      }
+
+      logger.log(
+        "info",
+        "Filter user/group",
+        "Removing the user from group and vice versa",
+        ""
       );
-      throw err;
-    }
 
-    foundGroup.teamLeader = req.body.teamLeader;
+      const newUserGroups = foundUser.groups.filter(group => {
+        return group.groupId !== foundGroup._id;
+      });
 
-    logger.log(
-      "info",
-      "Retrieve user...",
-      "Check if user exists in database",
-      ""
-    );
+      foundUser.groups = newUserGroups;
 
-    //remove group from this user
-    let foundUser = user.findOne({ _id: userId });
-    if (!foundUser) {
-      const err = errorHandler.createOperationalError(
-        "User doesn't exist in the database",
-        403
+      //remove this user from this group
+      const newGroupUsers = foundGroup.users.filter(user => {
+        return user.userId !== userId;
+      });
+
+      foundGroup.users = newGroupUsers;
+
+      //TODO: MAYBE:: all tasks by this user move to general user
+
+      logger.log("info", "User.save, group.save", "Saving new changes...", "");
+      foundUser = await foundUser.save();
+      foundGroup = await foundGroup.save();
+
+      logger.log(
+        "info",
+        req.method + " " + req.baseUrl + req.url,
+        "============= Finished Leave Group =============",
+        ""
       );
-      throw err;
+      res.send(foundUser);
     }
-
-    logger.log(
-      "info",
-      "Filter user/group",
-      "Removing the user from group and vice versa",
-      ""
-    );
-
-    const newUserGroups = foundUser.groups.filter(group => {
-      return group.groupId !== foundGroup._id;
-    });
-
-    foundUser.groups = newUserGroups;
-
-    //remove this user from this group
-    const newGroupUsers = foundGroup.users.filter(user => {
-      return user.userId !== userId;
-    });
-
-    foundGroup.users = newGroupUsers;
-
-    //TODO: MAYBE:: all tasks by this user move to general user
-
-    logger.log("info", "User.save, group.save", "Saving new changes...", "");
-    foundUser = await foundUser.save();
-    foundGroup = await foundGroup.save();
-
-    logger.log(
-      "info",
-      req.method + " " + req.baseUrl + req.url,
-      "============= Finished Leave Group =============",
-      ""
-    );
-    res.send(foundUser);
   } catch (err) {
     next(err);
   }
 };
 
-const deleteGroup = async foundGroup => {
+const deleteGroup = async (foundGroup, req) => {
   logger.log(
     "info",
     req.method + " " + req.baseUrl + req.url,
@@ -159,7 +169,7 @@ const deleteGroup = async foundGroup => {
   for (let groupUser of foundGroup.users) {
     if (groupUser.userId !== "general") {
       usersList.push(groupUser.userId);
-      tasksList.push(groupUser.taskId);
+      if (groupUser.taskId.length > 0) tasksList.push(groupUser.taskId);
     }
   }
 
@@ -174,13 +184,11 @@ const deleteGroup = async foundGroup => {
     ""
   );
   for (let groupUser of foundUsers) {
-    for (let index = 0; index < groupUser.groups.length; index++) {
-      if (req.params.groupId === groupUser.groups[index].groupId) {
-        groupUser.groups = groupUser.groups.splice(index, 1);
-        await groupUser.save();
-        break;
-      }
-    }
+    groupUser.groups = groupUser.groups.filter(group => {
+      return req.params.groupId !== group.groupId;
+    });
+    await groupUser.save();
+    break;
   }
 
   logger.log("info", "task.remove()", "Remove all Tasks", "");
