@@ -73,7 +73,7 @@ exports.inviteUser = async (req, res, next) => {
     }
 
     //can't invite yourself
-    const token = req.get("authorization");
+    const token = req.get("authorization").replace("Bearer ", "");
     const userId = auth.getIdFromToken(token);
 
     if (userId === foundUser._id) {

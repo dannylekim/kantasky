@@ -67,9 +67,9 @@ exports.joinGroup = async (req, res, next) => {
     );
 
     //check if user has a notification to join this group
-    const oneLessNotification = foundUser.notifications.filter(
-      notification => notification.groupId !== foundGroup._id
-    );
+    const oneLessNotification = foundUser.notifications.filter(notification => {
+      return notification.groupId !== req.params.groupId;
+    });
 
     if (oneLessNotification.length === foundUser.notifications.length) {
       const err = errorHandler.createOperationalError(
