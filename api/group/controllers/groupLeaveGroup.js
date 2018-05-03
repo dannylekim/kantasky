@@ -75,6 +75,10 @@ exports.leaveGroup = async (req, res, next) => {
 
       //set new Team Leader
       if (
+        foundGroup.teamLeader.leaderId === userId){
+
+        
+      if (
         !req.body.teamLeader ||
         !req.body.teamLeader.name ||
         !req.body.teamLeader.leaderId
@@ -85,20 +89,22 @@ exports.leaveGroup = async (req, res, next) => {
         );
         throw err;
       }
-
-      const foundTeamLeader = foundGroup.users.find(user => {
-        return user.userId === req.body.teamLeader.leaderId;
-      });
-
-      if (!foundTeamLeader) {
-        const err = errorHandler.createOperationalError(
-          "Need to assign a new teamLeader to a user that exists within the group",
-          403
-        );
-        throw err;
+      else{
+        const foundTeamLeader = foundGroup.users.find(user => {
+          return user.userId === req.body.teamLeader.leaderId;
+        });
+  
+        if (!foundTeamLeader) {
+          const err = errorHandler.createOperationalError(
+            "Need to assign a new teamLeader to a user that exists within the group",
+            403
+          );
+          throw err;
+        }
+  
+        foundGroup.teamLeader = req.body.teamLeader;
       }
-
-      foundGroup.teamLeader = req.body.teamLeader;
+    }
 
       logger.log(
         "info",
@@ -108,7 +114,7 @@ exports.leaveGroup = async (req, res, next) => {
       );
 
       //remove group from this user
-      let foundUser = user.findOne({ _id: userId });
+      let foundUser = await user.findOne({ _id: userId });
       if (!foundUser) {
         const err = errorHandler.createOperationalError(
           "User doesn't exist in the database",
@@ -125,7 +131,7 @@ exports.leaveGroup = async (req, res, next) => {
       );
 
       const newUserGroups = foundUser.groups.filter(group => {
-        return group.groupId !== foundGroup._id;
+        return group.groupId !== req.params.groupId;
       });
 
       foundUser.groups = newUserGroups;
