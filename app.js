@@ -2,6 +2,8 @@
 
 const express = require("express"),
   app = express(),
+  server = require("http").Server(app),
+  io = require("socket.io")(server),
   Task = require("./api/task/taskModel"),
   User = require("./api/user/userModel"),
   Group = require("./api/group/groupModel"),
@@ -17,6 +19,7 @@ const express = require("express"),
   errorHandler = require("./utility/errorUtil"),
   cors = require("cors"),
   bcrypt = require("bcrypt"),
+  setupIO = require("./utility/socketUtil"),
   logger = require("./utility/logUtil");
 
 //============= Express Application Configuration ==========
@@ -27,10 +30,8 @@ app.use(morgan("dev"));
 app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(logger.loggerMiddleware)
+app.use(logger.loggerMiddleware);
 app.use("/", router);
-
-
 
 //============ Centralized Error Handler ===================
 
@@ -54,6 +55,10 @@ let strategy = new jwtStrategy(jwtOptions, function(jwtPayload, callback) {
   });
 });
 
+io.on("connection", client => {
+  setupIO(client);
+});
+
 passport.use(strategy);
 
-module.exports = app;
+module.exports = { server, io };
