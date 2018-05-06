@@ -1,4 +1,4 @@
-const app = require("../app"),
+const {server} = require("../app"),
   mongoose = require("mongoose"),
   config = require("../config/config"),
   MongoClient = require("mongodb").MongoClient;
@@ -12,5 +12,6 @@ mongoose.connect(config.database, {
 //=============== Start the Server =====================
 
 const port = process.env.PORT || 4000;
-app.listen(port);
+server.listen(port);
 console.log("Kantasky Server started on port: " + port);
+
