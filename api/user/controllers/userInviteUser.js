@@ -12,8 +12,8 @@ const mongoose = require("mongoose"),
   bcrypt = require("bcrypt"),
   config = require("../../../config/config"),
   jwt = require("jsonwebtoken"),
-  {emitUserUpdate} = require("../../../utility/socketUtil")
-  logger = require("../../../utility/logUtil");
+  { emitChange, EMIT_CONSTANTS } = require("../../../utility/socketUtil");
+logger = require("../../../utility/logUtil");
 
 //===============================================
 
@@ -111,9 +111,9 @@ exports.inviteUser = async (req, res, next) => {
 
     res.json({ message: "Successfully invited user" });
 
-    foundUser.password = undefined
-    foundUser.role = undefined
-    emitUserUpdate([req.params.userId], foundUser)
+    foundUser.password = undefined;
+    foundUser.role = undefined;
+    emitChange([req.params.userId], foundUser, EMIT_CONSTANTS.EMIT_USER_UPDATE);
   } catch (err) {
     next(err);
   }

@@ -74,17 +74,8 @@ const emitChange = (users, data, emitString) => {
   }
 };
 
-const emitUserUpdate = (user, changedUserData) => {
-  const userSockets = loggedInUsers[user];
-  if (userSockets && userSockets.length > 0)
-    for (socket of userSockets) {
-      socket.emit("userUpdate", changedUserData);
-    }
-};
-
 module.exports = {
   setupIO,
   emitChange,
-  emitUserUpdate,
   EMIT_CONSTANTS
 };
