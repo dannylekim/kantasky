@@ -78,7 +78,7 @@ exports.updateAccountInformation = async (req, res, next) => {
     foundUser.password = undefined;
     foundUser.role = undefined;
     res.send(foundUser);
-    emitChange(req.params.userId, foundUser, EMIT_CONSTANTS.EMIT_USER_UPDATE);
+    emitChange([req.params.userId], foundUser, EMIT_CONSTANTS.EMIT_USER_UPDATE);
   } catch (err) {
     next(err);
   }
