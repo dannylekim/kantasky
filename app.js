@@ -19,7 +19,7 @@ const express = require("express"),
   errorHandler = require("./utility/errorUtil"),
   cors = require("cors"),
   bcrypt = require("bcrypt"),
-  setupIO = require("./utility/socketUtil"),
+  {setupIO} = require("./utility/socketUtil"),
   logger = require("./utility/logUtil");
 
 //============= Express Application Configuration ==========

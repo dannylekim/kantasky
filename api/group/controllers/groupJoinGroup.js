@@ -10,7 +10,8 @@ const mongoose = require("mongoose"),
   user = mongoose.model("User"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
-  logger = require("../../../utility/logUtil");
+  logger = require("../../../utility/logUtil"),
+  { EMIT_CONSTANTS, emitChange } = require("../../../utility/socketUtil");
 
 //    join/group:id
 exports.joinGroup = async (req, res, next) => {
@@ -113,6 +114,13 @@ exports.joinGroup = async (req, res, next) => {
     foundUser = await foundUser.save();
 
     res.send(foundGroup);
+    emitChange(foundUser._id, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_CREATE);
+    const userList = foundGroup.users.map(user => {
+      return user.userId !== "general" && user.userId !== foundUser._id
+        ? user.userId
+        : 0;
+    });
+    emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
   } catch (err) {
     next(err);
   }
