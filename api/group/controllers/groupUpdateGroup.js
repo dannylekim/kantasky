@@ -8,7 +8,8 @@ const mongoose = require("mongoose"),
   user = mongoose.model("User"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
-  logger = require("../../../utility/logUtil");
+  logger = require("../../../utility/logUtil"),
+  { emitChange, EMIT_CONSTANTS } = require("../../../utility/socketUtil");
 
 //TODO: TEST -- SEEMS TO WORK
 /**
@@ -184,6 +185,10 @@ exports.updateGroup = async (req, res, next) => {
       ""
     );
     res.send(foundGroup);
+    const userList = foundGroup.users.map(user => {
+      return user.userId;
+    });
+    emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
   } catch (err) {
     next(err);
   }

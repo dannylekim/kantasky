@@ -8,7 +8,8 @@ const mongoose = require("mongoose"),
   user = mongoose.model("User"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
-  logger = require("../../../utility/logUtil");
+  logger = require("../../../utility/logUtil"),
+  { emitChange, EMIT_CONSTANTS } = require("../../../utility/socketUtil");
 
 //FIXME: THIS IS SUCH A HEAVY FUNCTION
 exports.deleteGroup = async (req, res, next) => {
@@ -83,6 +84,7 @@ exports.deleteGroup = async (req, res, next) => {
       ""
     );
     res.json({ message: "Group has successfully been removed" });
+    emitChange(usersList, req.params.groupId, EMIT_CONSTANTS.EMIT_GROUP_DELETE);
   } catch (err) {
     next(err);
   }

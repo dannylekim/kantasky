@@ -74,37 +74,33 @@ exports.leaveGroup = async (req, res, next) => {
       logger.log("info", "", "Trying to put in the new TeamLeader", "");
 
       //set new Team Leader
-      if (
-        foundGroup.teamLeader.leaderId === userId){
-
-        
-      if (
-        !req.body.teamLeader ||
-        !req.body.teamLeader.name ||
-        !req.body.teamLeader.leaderId
-      ) {
-        const err = errorHandler.createOperationalError(
-          "Need to assign a new teamLeader",
-          403
-        );
-        throw err;
-      }
-      else{
-        const foundTeamLeader = foundGroup.users.find(user => {
-          return user.userId === req.body.teamLeader.leaderId;
-        });
-  
-        if (!foundTeamLeader) {
+      if (foundGroup.teamLeader.leaderId === userId) {
+        if (
+          !req.body.teamLeader ||
+          !req.body.teamLeader.name ||
+          !req.body.teamLeader.leaderId
+        ) {
           const err = errorHandler.createOperationalError(
-            "Need to assign a new teamLeader to a user that exists within the group",
+            "Need to assign a new teamLeader",
             403
           );
           throw err;
+        } else {
+          const foundTeamLeader = foundGroup.users.find(user => {
+            return user.userId === req.body.teamLeader.leaderId;
+          });
+
+          if (!foundTeamLeader) {
+            const err = errorHandler.createOperationalError(
+              "Need to assign a new teamLeader to a user that exists within the group",
+              403
+            );
+            throw err;
+          }
+
+          foundGroup.teamLeader = req.body.teamLeader;
         }
-  
-        foundGroup.teamLeader = req.body.teamLeader;
       }
-    }
 
       logger.log(
         "info",
@@ -156,6 +152,20 @@ exports.leaveGroup = async (req, res, next) => {
         ""
       );
       res.send(foundUser);
+
+      emitChange(
+        [userId],
+        req.params.groupId,
+        EMIT_CONSTANTS.EMIT_GROUP_DELETE
+      );
+
+      //FIXME: if you feel like you really want to optimize this go ahead. It'll be a for loop and an array initialization to pick up non-0 ids.
+      const userList = foundGroup.users.map(user => {
+        return user.userId !== "general" && user.userId !== userId
+          ? user.userId
+          : 0;
+      });
+      emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
     }
   } catch (err) {
     next(err);
