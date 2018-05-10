@@ -161,9 +161,7 @@ exports.leaveGroup = async (req, res, next) => {
 
       //FIXME: if you feel like you really want to optimize this go ahead. It'll be a for loop and an array initialization to pick up non-0 ids.
       const userList = foundGroup.users.map(user => {
-        return user.userId !== "general" && user.userId !== userId
-          ? user.userId
-          : 0;
+        return user.userId !== "general" ? user.userId : 0;
       });
       emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
     }

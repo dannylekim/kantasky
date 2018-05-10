@@ -74,7 +74,7 @@ exports.createTaskInGroup = async (req, res, next) => {
     );
     res.send(newTask);
     const userList = foundGroup.users.map(user => {
-      return user.userId;
+      return user.userId !== "general" ? user.userId : 0;
     });
     emitChange(userList, newTask, EMIT_CONSTANTS.EMIT_TASK_CREATE);
   } catch (err) {

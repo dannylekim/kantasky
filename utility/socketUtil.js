@@ -11,6 +11,8 @@ const EMIT_CONSTANTS = {
   EMIT_USER_UPDATE: "userUpdate"
 };
 
+const constantKeys = Object.keys(EMIT_CONSTANTS);
+
 //TODO: MAYBE use socket rooms rather than this method to set sockets.
 
 const setupIO = client => {
@@ -58,7 +60,11 @@ const disconnectUser = client => {
 //users will always be an ARRAY of userIds
 
 const emitChange = (users, data, emitString) => {
-  if (!EMIT_CONSTANTS.keys().find(emitString)) {
+  const isCorrectConstant = constantKeys.find(keys => {
+    return EMIT_CONSTANTS[keys] === emitString;
+  });
+
+  if (!isCorrectConstant) {
     throw new Error(
       "Emit string is not part of the constants available to use."
     );
