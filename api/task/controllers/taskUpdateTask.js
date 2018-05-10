@@ -122,7 +122,7 @@ exports.updateTask = async (req, res, next) => {
     );
     res.json(foundTask);
     const userList = foundGroup.users.map(user => {
-      return user.userId;
+      return user.userId !== "general" ? user.userId : 0;
     });
     emitChange(userList, foundTask, EMIT_CONSTANTS.EMIT_TASK_UPDATE);
   } catch (err) {

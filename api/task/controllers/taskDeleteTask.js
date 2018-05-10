@@ -88,7 +88,7 @@ exports.deleteTask = async (req, res, next) => {
     );
     res.json({ message: "Task has successfully been removed" });
     const userList = foundGroup.users.map(user => {
-      return user.userId;
+      return user.userId !== "general" ? user.userId : 0;
     });
     emitChange(userList, req.params.taskId, EMIT_CONSTANTS.EMIT_TASK_DELETE);
   } catch (err) {

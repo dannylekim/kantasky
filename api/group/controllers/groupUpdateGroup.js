@@ -186,7 +186,7 @@ exports.updateGroup = async (req, res, next) => {
     );
     res.send(foundGroup);
     const userList = foundGroup.users.map(user => {
-      return user.userId;
+      return user.userId !== "general" ? user.userId : 0;
     });
     emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
   } catch (err) {

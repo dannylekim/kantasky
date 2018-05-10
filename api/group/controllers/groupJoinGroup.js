@@ -114,11 +114,9 @@ exports.joinGroup = async (req, res, next) => {
     foundUser = await foundUser.save();
 
     res.send(foundGroup);
-    emitChange(foundUser._id, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_CREATE);
+    emitChange([foundUser._id], foundGroup, EMIT_CONSTANTS.EMIT_GROUP_CREATE);
     const userList = foundGroup.users.map(user => {
-      return user.userId !== "general" && user.userId !== foundUser._id
-        ? user.userId
-        : 0;
+      return user.userId !== "general" ? user.userId : 0;
     });
     emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
   } catch (err) {
