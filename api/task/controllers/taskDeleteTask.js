@@ -54,24 +54,23 @@ exports.deleteTask = async (req, res, next) => {
       "Check all groups with user inside for that one task and remove it all.",
       ""
     );
-    let isUserFound = false;
+
+    let userInGroup;
     for (let user of foundGroup.users) {
-      if (user.userId === foundTask.user) {
-        const index = user.taskId.indexOf(req.params.taskId);
-        if (index <= -1)
-          throw errorHandler.createOperationalError(
-            "Task not found in group",
-            500
-          );
-        user.taskId = user.taskId.splice(index, 1);
-        isUserFound = true;
+      userInGroup = user.taskId.find(id => {
+        return id === req.params.taskId;
+      });
+      if (userInGroup) {
+        let index = user.taskId.indexOf(foundTask._id)
+        user.taskId = user.taskId.splice(index, 1)
         break;
       }
     }
-    if (isUserFound) await foundGroup.save();
+
+    if (userInGroup) await foundGroup.save();
     else
       throw errorHandler.createOperationalError(
-        "User was not found in group",
+        "Task was not found in group",
         500
       );
 

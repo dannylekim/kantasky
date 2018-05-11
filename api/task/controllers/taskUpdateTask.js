@@ -44,13 +44,7 @@ exports.updateTask = async (req, res, next) => {
         500
       );
 
-    // if (foundTask.user !== reqId) {
-    //   throw errorHandler.createOperationalError(
-    //     "Only the task's user can update his own tasks.",
-    //     401
-    //   );
-    // }
-
+    let userList;
     //check if it's correct user
     if (req.body.user) {
       const foundUser = await user.findOne({ _id: req.body.user });
@@ -107,10 +101,13 @@ exports.updateTask = async (req, res, next) => {
         await usersToChangeOwnerShip[0].save();
         await usersToChangeOwnerShip[1].save();
       }
+      userList = foundGroup.users.map(user => {
+        return user.userId !== "general" ? user.userId : 0;
+      });
     }
 
     logger.log("info", "task.findOneAndUpdate()", "Update the task", "");
-    await task.findOneAndUpdate({ _id: req.params.taskId }, req.body, {
+    foundTask = await task.findOneAndUpdate({ _id: req.params.taskId }, req.body, {
       new: true
     });
 
@@ -121,9 +118,6 @@ exports.updateTask = async (req, res, next) => {
       ""
     );
     res.json(foundTask);
-    const userList = foundGroup.users.map(user => {
-      return user.userId !== "general" ? user.userId : 0;
-    });
     emitChange(userList, foundTask, EMIT_CONSTANTS.EMIT_TASK_UPDATE);
   } catch (err) {
     next(err);
