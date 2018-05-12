@@ -9,7 +9,7 @@ const mongoose = require("mongoose"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
   logger = require("../../../utility/logUtil"),
-  {emitChange, EMIT_CONSTANTS} = require("../../../utility/socketUtil");
+  { emitChange, EMIT_CONSTANTS } = require("../../../utility/socketUtil");
 
 //TODO: Assign new team leader, remove groups from this user and move all user's tasks to general user. If last user, delete group.
 exports.leaveGroup = async (req, res, next) => {
@@ -133,19 +133,19 @@ exports.leaveGroup = async (req, res, next) => {
 
       foundUser.groups = newUserGroups;
 
-      logger.log("info", "Move all tasks to General", "", "")
+      logger.log("info", "Move all tasks to General", "", "");
 
-      let generalUser = foundGroup.users.find((user) => {
-        return user.userId === "general"
-      })
+      let generalUser = foundGroup.users.find(user => {
+        return user.userId === "general";
+      });
 
-      generalUser.taskId = [...generalUser.taskId, ...isUserInGroup.taskId]
+      generalUser.taskId = [...generalUser.taskId, ...isUserInGroup.taskId];
 
-      for(let id of isUserInGroup.taskId) {
-        let foundTask = await task.findOne({_id: id})
-        if(foundTask) {
-          foundTask.user = "general"
-          await foundTask.save()
+      for (let id of isUserInGroup.taskId) {
+        let foundTask = await task.findOne({ _id: id });
+        if (foundTask) {
+          foundTask.user = "general";
+          await foundTask.save();
         }
       }
 
@@ -180,8 +180,10 @@ exports.leaveGroup = async (req, res, next) => {
       const userList = foundGroup.users.map(user => {
         return user.userId !== "general" ? user.userId : 0;
       });
- 
+
       emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
+      let allTasks = await task.find({ group: req.params.groupId });
+      emitChange(userList, allTasks, EMIT_CONSTANTS.EMIT_GROUPTASKS_UPDATE);
     }
   } catch (err) {
     next(err);
