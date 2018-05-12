@@ -8,7 +8,8 @@ const EMIT_CONSTANTS = {
   EMIT_TASK_UPDATE: "taskUpdate",
   EMIT_TASK_CREATE: "taskCreate",
   EMIT_TASK_DELETE: "taskDelete",
-  EMIT_USER_UPDATE: "userUpdate"
+  EMIT_USER_UPDATE: "userUpdate",
+  EMIT_GROUPTASKS_UPDATE: "groupTasksUpdate"
 };
 
 const constantKeys = Object.keys(EMIT_CONSTANTS);
