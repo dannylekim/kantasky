@@ -8,10 +8,10 @@ const mongoose = require("mongoose"),
   user = mongoose.model("User"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
-  logger = require("../../../utility/logUtil");
+  logger = require("../../../utility/logUtil"),
+  { emitChange, EMIT_CONSTANTS } = require("../../../utility/socketUtil");
 
 //TODO: TEST -- SEEMS TO WORK
-//TODO: REFACTOR THE CODE TO UPDATE USERS INTO A NEW FUNCTION FOR ACCEPTING GROUP INVITES
 /**
  * Updates the group. The fields edited are teamLeader, Users and the group name. Changing team Leader and Users requires that
  * the group is category group and that the requester is a team leader.
@@ -185,6 +185,10 @@ exports.updateGroup = async (req, res, next) => {
       ""
     );
     res.send(foundGroup);
+    const userList = foundGroup.users.map(user => {
+      return user.userId !== "general" ? user.userId : 0;
+    });
+    emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
   } catch (err) {
     next(err);
   }

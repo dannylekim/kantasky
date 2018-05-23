@@ -12,17 +12,17 @@ const logger = require("./logUtil");
  * @param {any} next Next
  */
 exports.handleError = (err, req, res, next) => {
-  
-
-    const label = req.method + " " + req.baseUrl + res.url
-    let message = ""
-    let level = "warn"
+  const label = req.method + " " + req.baseUrl + res.url;
+  let message = "";
+  let level = "warn";
 
   if (!err.isOperational) level = "error";
 
   if (err.status) {
     message = err.status;
     res.status(err.status);
+  } else {
+    res.status(500);
   }
 
   logger.log(level, label, message, err);

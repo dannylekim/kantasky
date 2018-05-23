@@ -53,9 +53,10 @@ const userSchema = new Schema({
   notifications: [
     {
       groupId: String,
-      teamLeader: String,
+      teamLeader: {},
       description: String,
       name: String,
+      unread: { type: Boolean, default: true },
       _id: false
     }
   ],
