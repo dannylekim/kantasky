@@ -10,6 +10,8 @@ silly: 5
 
 It's up to the programmer to write logs at the appropriate level. Level 5 is the most verbose. Log levels should be read from a config file. 
 
+TODO: Things to log: IP should be logged, Session ID if it exists otherwise the JWT token, how much memory is used/remaining, what parameters are being carried on a logged basis
+who the requester, where the requester and what requester parameters were. 
 
 */
 

@@ -9,7 +9,8 @@ const mongoose = require("mongoose"),
   bcrypt = require("bcrypt"),
   config = require("../../../config/config"),
   jwt = require("jsonwebtoken"),
-  logger = require("../../../utility/logUtil");
+  logger = require("../../../utility/logUtil"),
+  { emitChange, EMIT_CONSTANTS } = require("../../../utility/socketUtil");
 
 //===============================================
 
@@ -37,7 +38,14 @@ exports.updateAccountInformation = async (req, res, next) => {
 
   try {
     //if all empty fields, reject
-    if (!(updatedUser.firstName || updatedUser.lastName || updatedUser.email || req.body.notifications)) {
+    if (
+      !(
+        updatedUser.firstName ||
+        updatedUser.lastName ||
+        updatedUser.email ||
+        req.body.notifications
+      )
+    ) {
       const err = errorHandler.createOperationalError(
         "You need to change at least one thing!"
       );
@@ -70,6 +78,7 @@ exports.updateAccountInformation = async (req, res, next) => {
     foundUser.password = undefined;
     foundUser.role = undefined;
     res.send(foundUser);
+    emitChange([req.params.userId], foundUser, EMIT_CONSTANTS.EMIT_USER_UPDATE);
   } catch (err) {
     next(err);
   }

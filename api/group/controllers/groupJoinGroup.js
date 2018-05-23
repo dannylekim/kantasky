@@ -10,7 +10,8 @@ const mongoose = require("mongoose"),
   user = mongoose.model("User"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
-  logger = require("../../../utility/logUtil");
+  logger = require("../../../utility/logUtil"),
+  { EMIT_CONSTANTS, emitChange } = require("../../../utility/socketUtil");
 
 //    join/group:id
 exports.joinGroup = async (req, res, next) => {
@@ -67,9 +68,9 @@ exports.joinGroup = async (req, res, next) => {
     );
 
     //check if user has a notification to join this group
-    const oneLessNotification = foundUser.notifications.filter(
-      notification => notification.groupId !== foundGroup._id
-    );
+    const oneLessNotification = foundUser.notifications.filter(notification => {
+      return notification.groupId !== req.params.groupId;
+    });
 
     if (oneLessNotification.length === foundUser.notifications.length) {
       const err = errorHandler.createOperationalError(
@@ -80,6 +81,17 @@ exports.joinGroup = async (req, res, next) => {
     }
 
     foundUser.notifications = oneLessNotification;
+
+    const hasGroupAlreadyIn = foundUser.groups.find(group => {
+      return group.groupId === foundGroup._id;
+    });
+
+    if (hasGroupAlreadyIn) {
+      throw errorHandler.createOperationalError(
+        "User is already a part of this group",
+        403
+      );
+    }
 
     logger.log("info", "userGroup.users.push", "Saving user in group", "");
     //add user to group
@@ -101,7 +113,12 @@ exports.joinGroup = async (req, res, next) => {
 
     foundUser = await foundUser.save();
 
-    res.json({ message: "Successfully Joined Group" });
+    res.send(foundGroup);
+    emitChange([foundUser._id], foundGroup, EMIT_CONSTANTS.EMIT_GROUP_CREATE);
+    const userList = foundGroup.users.map(user => {
+      return user.userId !== "general" ? user.userId : 0;
+    });
+    emitChange(userList, foundGroup, EMIT_CONSTANTS.EMIT_GROUP_UPDATE);
   } catch (err) {
     next(err);
   }
