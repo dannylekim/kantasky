@@ -114,6 +114,7 @@ exports.inviteUser = async (req, res, next) => {
     foundUser.password = undefined;
     foundUser.role = undefined;
     emitChange([req.params.userId], foundUser, EMIT_CONSTANTS.EMIT_USER_UPDATE);
+    emitChange([req.params.userId], "You've been invited to join " + notification.name, EMIT_CONSTANTS.EMIT_USER_INVITE)
   } catch (err) {
     next(err);
   }
