@@ -50,7 +50,7 @@ exports.getGroupsTasks = async (req, res, next) => {
 
     
     //find all the tasks and send
-    let allTasks = await task.find({ group: groupId });
+    let allTasks = await task.find({ group: groupId }).sort({category:1});
 
     logger.log(
       "info",
