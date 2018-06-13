@@ -107,9 +107,8 @@ exports.updateTask = async (req, res, next) => {
     }
 
     logger.log("info", "task.findOneAndUpdate()", "Update the task", "");
-    foundTask = await task.findOneAndUpdate({ _id: req.params.taskId }, req.body, {
-      new: true
-    });
+    foundTask.set(req.body);
+    await foundTask.save();
 
     logger.log(
       "info",
