@@ -66,7 +66,7 @@ const userSchema = new Schema({
       default: Date.now
     }
   ]
-});
+}, {usePushEach: true});
 
 /**
  * Verifies the validity by comparing the tried password and the stored password
