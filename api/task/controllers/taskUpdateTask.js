@@ -54,6 +54,8 @@ exports.updateTask = async (req, res, next) => {
           500
         );
 
+
+        req.body.userName = foundUser.firstName + " " + foundUser.lastName
       //check if it's the correct group
       const foundGroup = await group.findOne({ _id: foundTask.group });
       if (!foundGroup)
