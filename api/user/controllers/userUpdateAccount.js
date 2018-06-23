@@ -4,6 +4,8 @@
 
 const mongoose = require("mongoose"),
   user = mongoose.model("User"),
+  task = mongoose.model("Task"),
+  group = mongoose.model("Group"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
   bcrypt = require("bcrypt"),
@@ -67,6 +69,34 @@ exports.updateAccountInformation = async (req, res, next) => {
     foundUser.set(updatedUser); //update the user
 
     logger.log("info", "foundUser.save()", "Updating the user", "");
+
+    listOfGroupIds = foundUser.groups.map(group => {
+      return group.groupId;
+    });
+
+    logger.log("info", "foundUser.save()", "Updating user in Groups", "");
+    for (let groupId of listOfGroupIds) {
+      let foundGroup = await group.findOne({ _id: groupId });
+      if (!foundGroup) {
+        const err = errorHandler.createOperationalError("Cannot find group");
+        throw err;
+      }
+      let userObj = foundGroup.users.find(user => {
+        return user.userId === foundUser.id;
+      });
+      userObj.userName = foundUser.firstName + " " + foundUser.lastName;
+      if (foundGroup.teamLeader.leaderId === foundUser.id) {
+        foundGroup.teamLeader.name = userObj.userName;
+      }
+      await foundGroup.save();
+    }
+
+    let allTasks = await task.find({ user: foundUser.id });
+    for (aTask of allTasks) {
+      aTask.userName = foundUser.firstName + " " + foundUser.lastName;
+      aTask.save();
+    }
+
     foundUser = await foundUser.save();
     logger.log(
       "info",

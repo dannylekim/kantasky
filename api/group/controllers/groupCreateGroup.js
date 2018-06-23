@@ -44,7 +44,13 @@ exports.createGroup = async (req, res, next) => {
       "Creating the group users and general user",
       ""
     );
-    req.body.users = [{ userId: req.params.userId, taskId: [] }];
+    req.body.users = [
+      {
+        userId: req.params.userId,
+        taskId: [], 
+        userName: foundUser.firstName + " " + foundUser.lastName
+      }
+    ];
     if (req.body.category === "group")
       req.body.users.push({ userId: "general", taskId: [] });
     req.body.teamLeader = {
