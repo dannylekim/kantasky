@@ -47,15 +47,21 @@ exports.updateTask = async (req, res, next) => {
     let userList;
     //check if it's correct user
     if (req.body.user) {
-      const foundUser = await user.findOne({ _id: req.body.user });
-      if (!foundUser)
-        throw errorHandler.createOperationalError(
-          "The new user does not exist.",
-          500
-        );
 
+      if(req.body.user !== "general") {
+        const foundUser = await user.findOne({ _id: req.body.user });
+        if (!foundUser)
+          throw errorHandler.createOperationalError(
+            "The new user does not exist.",
+            500
+          );
+          req.body.userName = foundUser.firstName + " " + foundUser.lastName
+      }
+      else {
+        req.body.userName = "general"
+      }
 
-        req.body.userName = foundUser.firstName + " " + foundUser.lastName
+    
       //check if it's the correct group
       const foundGroup = await group.findOne({ _id: foundTask.group });
       if (!foundGroup)
@@ -83,7 +89,7 @@ exports.updateTask = async (req, res, next) => {
         logger.log("info", "Swap", "Swapping Ownershp", "");
         if (usersToChangeOwnerShip[0].userId === req.body.user) {
           usersToChangeOwnerShip[0].taskId.push(req.params.taskId);
-          const indexOfTask = usersToChangeOwnership[1].taskId.indexOf(
+          const indexOfTask = usersToChangeOwnerShip[1].taskId.indexOf(
             foundTask.user
           );
           usersToChangeOwnerShip[1].taskId = usersToChangeOwnerShip[1].taskId.splice(
@@ -92,7 +98,7 @@ exports.updateTask = async (req, res, next) => {
           );
         } else {
           usersToChangeOwnerShip[1].taskId.push(req.params.taskId);
-          const indexOfTask = usersToChangeOwnership[0].taskId.indexOf(
+          const indexOfTask = usersToChangeOwnerShip[0].taskId.indexOf(
             foundTask.user
           );
           usersToChangeOwnerShip[0].taskId = usersToChangeOwnerShip[0].taskId.splice(
