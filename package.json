@@ -26,18 +26,18 @@
   "homepage": "https://github.com/dannylekim/teamOrganizer#readme",
   "devDependencies": {
     "morgan": "^1.9.0",
-    "nodemon": "^1.17.5"
+    "nodemon": "^1.18.3"
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
     "cors": "^2.8.4",
     "express": "^4.16.3",
-    "jsonwebtoken": "^8.2.1",
-    "moment": "^2.22.1",
+    "jsonwebtoken": "^8.3.0",
+    "moment": "^2.22.2",
     "mongoose": "^4.13.14",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.1",
     "socket.io": "^2.1.1",
-    "winston": "^3.0.0-rc5"
+    "winston": "^3.0.0"
   }
 }
