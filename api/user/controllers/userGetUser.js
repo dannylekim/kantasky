@@ -4,6 +4,7 @@
 
 const mongoose = require("mongoose"),
   user = mongoose.model("User"),
+  group = mongoose.model("Group"),
   auth = require("../../../utility/authUtil"),
   errorHandler = require("../../../utility/errorUtil"),
   bcrypt = require("bcrypt"),
@@ -59,9 +60,18 @@ exports.searchUser = async (req,res, next) => {
   try {
     //get user and send
 
-    //TODO: can't find yourself
     const foundUser = await user.findOne({email: req.params.email})
     if(!foundUser) throw errorHandler.createOperationalError("User does not exist", 403)
+    const foundGroup = await group.findOne({_id: req.params.groupId})
+    if(!foundGroup) throw errorHandler.createOperationalError("Group does not exist", 403)
+
+    let userInGroup = foundGroup.users.find(user =>{
+      return user.userId === foundUser.id
+    })
+
+    if(userInGroup){
+      throw errorHandler.createOperationalError("User is already in this group!", 401)
+    }
 
     const formattedUser = { 
       firstName: foundUser.firstName,

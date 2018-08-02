@@ -31,6 +31,7 @@ const taskSchema = new Schema(
       default: ["normal"]
     },
     user: String,
+    userName: String,
     group: String,
     category: {
       type: String,

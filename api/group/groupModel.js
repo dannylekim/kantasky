@@ -11,6 +11,7 @@ const groupSchema = new Schema(
       {
         userId: String,
         taskId: [String],
+        userName: String,
         _id: false
       }
     ],

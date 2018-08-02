@@ -38,7 +38,7 @@ router
   .put(passport.authenticate("jwt", { session: false }), changePassword);
 
 router
-  .route("/searchUser/:email")
+  .route("/searchUser/:groupId/:email")
   .get(passport.authenticate("jwt", { session: false }), searchUser);
   
 router

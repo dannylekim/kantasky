@@ -47,12 +47,17 @@ exports.updateTask = async (req, res, next) => {
     let userList;
     //check if it's correct user
     if (req.body.user) {
-      const foundUser = await user.findOne({ _id: req.body.user });
-      if (!foundUser)
-        throw errorHandler.createOperationalError(
-          "The new user does not exist.",
-          500
-        );
+      if (req.body.user !== "general") {
+        const foundUser = await user.findOne({ _id: req.body.user });
+        if (!foundUser)
+          throw errorHandler.createOperationalError(
+            "The new user does not exist.",
+            500
+          );
+        req.body.userName = foundUser.firstName + " " + foundUser.lastName;
+      } else {
+        req.body.userName = "General";
+      }
 
       //check if it's the correct group
       const foundGroup = await group.findOne({ _id: foundTask.group });
@@ -76,30 +81,25 @@ exports.updateTask = async (req, res, next) => {
           500
         );
 
-      //swap. Is it better to just filter out what isn't the task vs splicing it out.
+      //swap.
       if (usersToChangeOwnerShip.length === 2) {
         logger.log("info", "Swap", "Swapping Ownershp", "");
         if (usersToChangeOwnerShip[0].userId === req.body.user) {
           usersToChangeOwnerShip[0].taskId.push(req.params.taskId);
-          const indexOfTask = usersToChangeOwnership[1].taskId.indexOf(
-            foundTask.user
-          );
-          usersToChangeOwnerShip[1].taskId = usersToChangeOwnerShip[1].taskId.splice(
-            indexOfTask,
-            1
+          usersToChangeOwnerShip[1].taskId = usersToChangeOwnerShip[1].taskId.filter(
+            taskId => {
+              return taskId !== req.params.taskId;
+            }
           );
         } else {
           usersToChangeOwnerShip[1].taskId.push(req.params.taskId);
-          const indexOfTask = usersToChangeOwnership[0].taskId.indexOf(
-            foundTask.user
-          );
-          usersToChangeOwnerShip[0].taskId = usersToChangeOwnerShip[0].taskId.splice(
-            indexOfTask,
-            1
+          usersToChangeOwnerShip[0].taskId = usersToChangeOwnerShip[0].taskId.filter(
+            taskId => {
+              return taskId !== req.params.taskId;
+            }
           );
         }
-        await usersToChangeOwnerShip[0].save();
-        await usersToChangeOwnerShip[1].save();
+        await foundGroup.save();
       }
       userList = foundGroup.users.map(user => {
         return user.userId !== "general" ? user.userId : 0;
