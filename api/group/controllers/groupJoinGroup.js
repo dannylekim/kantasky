@@ -96,7 +96,11 @@ exports.joinGroup = async (req, res, next) => {
     logger.log("info", "userGroup.users.push", "Saving user in group", "");
     //add user to group
     if (foundGroup.category !== "personal") {
-      foundGroup.users.push({ userId: foundUser._id, taskId: [] });
+      foundGroup.users.push({
+        userId: foundUser._id,
+        taskId: [],
+        userName: foundUser.firstName + +" " + foundUser.lastName
+      });
     }
 
     foundGroup = await foundGroup.save();

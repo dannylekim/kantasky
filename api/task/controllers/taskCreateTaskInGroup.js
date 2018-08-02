@@ -56,6 +56,22 @@ exports.createTaskInGroup = async (req, res, next) => {
     req.body.group = req.params.groupId;
     req.body.user = req.params.userId;
 
+    if (!req.body.userName && req.body.user !== "general") {
+      const foundUser = await user.findOne({ _id: userInGroup.userId });
+      if (!foundUser) {
+        const err = errorHandler.createOperationalError(
+          "There is no such user!"
+        );
+        throw err;
+      }
+
+      req.body.userName = foundUser.firstName + " " + foundUser.lastName;
+    }
+    else if(req.body.user === "general"){
+      req.body.userName = "General"
+    }
+    
+
     //create task and save it to the database
     let newTask = new task(req.body);
 
