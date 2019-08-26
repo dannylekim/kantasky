@@ -43,10 +43,10 @@ let currentDate;
  *
  * @param {any}
  */
-const setLoggerFileDestination = () => {
+const setLoggerFileDestination = async () => {
   const dateObj = getTodaysDate();
   if (currentDate !== dateObj.todayString) {
-    createFolderHierarchyByDate(dateObj.month, dateObj.year);
+    await createFolderHierarchyByDate(dateObj.month, dateObj.year);
     currentDate = dateObj.todayString;
 
     //create the log names and then create the transports using those names
@@ -100,12 +100,12 @@ const setLoggerFileDestination = () => {
  * @param {any} year
  * @param {any} next
  */
-const createFolderHierarchyByDate = (month, year) => {
+const createFolderHierarchyByDate = async (month, year) => {
   //check if exists, if not create dir
-  if (!fs.existsSync("./logs")) fs.mkdir("./logs");
-  if (!fs.existsSync("./logs/" + year)) fs.mkdirSync("./logs/" + year);
+  if (!fs.existsSync("./logs")) await fs.mkdir("./logs");
+  if (!fs.existsSync("./logs/" + year)) await fs.mkdirSync("./logs/" + year);
   if (!fs.existsSync("./logs/" + year + "/" + month))
-    fs.mkdirSync("./logs/" + year + "/" + month);
+    await fs.mkdirSync("./logs/" + year + "/" + month);
 };
 
 /**
@@ -145,8 +145,8 @@ const getTodaysDate = () => {
  * @param {any} res
  * @param {any} next
  */
-exports.loggerMiddleware = (req, res, next) => {
-  setLoggerFileDestination(next);
+exports.loggerMiddleware = async (req, res, next) => {
+  await setLoggerFileDestination(next);
   next();
 };
 

@@ -25,19 +25,19 @@
   },
   "homepage": "https://github.com/dannylekim/teamOrganizer#readme",
   "devDependencies": {
-    "morgan": "^1.9.0",
-    "nodemon": "^1.18.3"
+    "morgan": "^1.9.1",
+    "nodemon": "^1.19.1"
   },
   "dependencies": {
-    "bcrypt": "^1.0.3",
-    "cors": "^2.8.4",
-    "express": "^4.16.3",
-    "jsonwebtoken": "^8.3.0",
-    "moment": "^2.22.2",
-    "mongoose": "^4.13.14",
+    "bcrypt": "^3.0.6",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.24.0",
+    "mongoose": "^4.13.19",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
-    "socket.io": "^2.1.1",
-    "winston": "^3.0.0"
+    "socket.io": "^2.2.0",
+    "winston": "^3.2.1"
   }
 }
