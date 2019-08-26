@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(logger.loggerMiddleware);
+// app.use(logger.loggerMiddleware);
 app.use("/", router);
 
 //============ Centralized Error Handler ===================
