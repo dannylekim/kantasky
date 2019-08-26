@@ -14,7 +14,7 @@ const express = require("express"),
   passportJWT = require("passport-jwt"),
   extractJWT = passportJWT.ExtractJwt,
   jwtStrategy = passportJWT.Strategy,
-  morgan = require("morgan"),
+  // morgan = require("morgan"),
   auth = require("./utility/authUtil"),
   errorHandler = require("./utility/errorUtil"),
   cors = require("cors"),
@@ -26,7 +26,7 @@ const express = require("express"),
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
