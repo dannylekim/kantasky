@@ -146,7 +146,10 @@ const getTodaysDate = () => {
  * @param {any} next
  */
 exports.loggerMiddleware = async (req, res, next) => {
-  await setLoggerFileDestination(next);
+  // await setLoggerFileDestination(next); removed for heroku for the time being
+  const consoleTransport = new transports.Console();
+  logger
+    .add(consoleTransport);
   next();
 };
 
