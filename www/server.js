@@ -6,7 +6,8 @@ const {server} = require("../app"),
 //======== Database Configuration =======================
 mongoose.Promise = global.Promise;
 mongoose.connect(config.database, {
-  useMongoClient: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 }); //database connection
 
 //=============== Start the Server =====================
