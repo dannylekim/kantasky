@@ -18,7 +18,7 @@ who the requester, where the requester and what requester parameters were.
 
 "use strict";
 const { createLogger, format, transports } = require("winston");
-const { combine, printf } = format;
+const { printf } = format;
 const fs = require("fs"),
   moment = require("moment"),
   logLevel = require("../config/config").logLevel
@@ -146,7 +146,9 @@ const getTodaysDate = () => {
  * @param {any} next
  */
 exports.loggerMiddleware = async (req, res, next) => {
-  // await setLoggerFileDestination(next); removed for heroku for the time being
+  if(process.ENV.IS_HEROKU){
+    await setLoggerFileDestination(next);
+  }
   const consoleTransport = new transports.Console();
   logger
     .add(consoleTransport);
